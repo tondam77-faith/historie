@@ -8,86 +8,114 @@
     <title>Historie - Smart SRS</title>
     <style>
         :root {
-            --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
-            --card-front: #ffffff; --highlight: #ffce54; --danger: #e74c3c; --gray: #95a5a6;
+            --primary: #1a3a5a; /* Logická modrá pro soustředění */
+            --accent: #e67e22;  /* Stimulující oranžová pro paměť */
+            --bg: #fdfbf7;      /* Krémová pro snížení únavy očí */
+            --card-front: #ffffff;
+            --text-main: #2c3e50;
+            --highlight: #ffce54; /* Žlutá pro klíčové body */
+            --danger: #e74c3c;
+            --gray: #95a5a6;
         }
+
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg); margin: 0; display: flex;
             flex-direction: column; align-items: center; min-height: 100vh;
-            padding: 15px; color: #2c3e50;
+            padding: 15px; color: var(--text-main);
         }
-        .container { width: 100%; max-width: 500px; }
-        h2 { color: var(--primary); text-align: center; margin-bottom: 20px; }
 
+        .container { width: 100%; max-width: 500px; text-align: center; }
+
+        /* Menu výběru */
         .deck-menu {
             background: #f1ede4; padding: 20px; border-radius: 20px; border: 1px solid #e2ddd3;
-            margin-bottom: 20px; text-align: left;
+            margin-bottom: 20px; text-align: left; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
         }
+
         .deck-option {
             display: flex; align-items: center; background: white; 
             padding: 12px; margin-bottom: 10px; border-radius: 12px; border: 1px solid #ddd;
         }
-        .deck-option input { width: 22px; height: 22px; margin-right: 15px; }
-        .deck-info { flex-grow: 1; cursor: pointer; }
-        .deck-name { font-weight: bold; display: block; }
-        .deck-count { font-size: 0.75rem; color: #666; }
 
+        .deck-option input { width: 22px; height: 22px; margin-right: 15px; }
+
+        /* Karta a SRS */
         .stats { display: flex; justify-content: space-around; font-weight: bold; margin-bottom: 15px; font-size: 0.9rem; color: var(--primary); }
-        .card-box { perspective: 1200px; height: 360px; margin-bottom: 15px; cursor: pointer; }
+        
+        .card-box { perspective: 1200px; height: 380px; margin-bottom: 15px; cursor: pointer; width: 100%; }
         .card { position: relative; width: 100%; height: 100%; transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1); transform-style: preserve-3d; }
         .card.flipped { transform: rotateY(180deg); }
+
         .card-front, .card-back {
             position: absolute; width: 100%; height: 100%; backface-visibility: hidden;
-            display: flex; flex-direction: column; justify-content: center; padding: 35px; border-radius: 24px;
-            box-shadow: 0 10px 25px rgba(26, 58, 90, 0.1);
+            -webkit-backface-visibility: hidden; display: flex; flex-direction: column;
+            justify-content: center; padding: 35px; border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(26, 58, 90, 0.1);
         }
-        .card-front { background: var(--card-front); color: var(--primary); border: 1px solid #eee; }
-        .card-back { background: var(--primary); color: #ffffff; transform: rotateY(180deg); align-items: flex-start; text-align: left; overflow-y: auto; }
 
+        .card-front { background: var(--card-front); color: var(--primary); border: 1px solid #eee; }
+        .card-back { 
+            background: var(--primary); color: #ffffff; transform: rotateY(180deg); 
+            align-items: flex-start; text-align: left; overflow-y: auto; 
+        }
+
+        /* Zarovnání odpovědí */
+        .q-text { font-size: 1.5rem; font-weight: bold; line-height: 1.3; }
+        .deck-label { font-size: 0.75rem; color: var(--accent); text-transform: uppercase; font-weight: bold; margin-bottom: 10px; }
+        .a-list { margin: 0; padding-left: 20px; font-size: 1.15rem; width: 100%; }
+        .a-list li { margin-bottom: 10px; }
+        .a-list li::marker { color: var(--highlight); }
+        .a-single { font-size: 1.3rem; border-left: 4px solid var(--highlight); padding-left: 15px; width: 100%; line-height: 1.4; }
+
+        /* SRS Tlačítka s intervaly */
         .controls-wrapper { min-height: 100px; display: flex; align-items: center; margin-bottom: 20px; }
         .controls { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%; visibility: hidden; opacity: 0; transition: opacity 0.3s ease; }
         .controls.visible { visibility: visible; opacity: 1; }
-        .srs-btn { border: none; padding: 12px 2px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; }
-        .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--gray); }
-        
+
+        .srs-btn {
+            border: none; padding: 12px 2px; border-radius: 12px; color: white;
+            font-weight: bold; cursor: pointer; font-size: 0.8rem;
+            display: flex; flex-direction: column; align-items: center;
+        }
+        .srs-btn span { font-size: 0.65rem; font-weight: normal; margin-top: 4px; opacity: 0.9; }
+
+        .b-0 { background: var(--danger); } 
+        .b-1 { background: var(--accent); } 
+        .b-2 { background: #3498db; } 
+        .b-3 { background: #27ae60; }
+
+        /* Ostatní UI */
         .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 1rem; cursor: pointer; }
-        .btn-alt { background: var(--accent); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.8rem; margin-top: 5px; }
-
-        .admin-panel { margin-top: 20px; padding: 20px; background: #f1ede4; border-radius: 20px; border: 1px solid #e2ddd3; text-align: left; }
-        .input-group { margin-bottom: 10px; }
-        input, textarea { width: 100%; padding: 10px; border-radius: 8px; border: 1px solid #ccc; font-family: inherit; }
+        .btn-alt { background: var(--accent); color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; margin-top: 10px; }
+        .admin-panel { margin-top: 30px; padding: 25px; background: #f1ede4; border-radius: 20px; border: 1px solid #e2ddd3; text-align: left; }
         
-        .q-text { font-size: 1.4rem; font-weight: bold; line-height: 1.3; }
-        .a-list { margin: 0; padding-left: 20px; font-size: 1.1rem; width: 100%; }
-        .a-list li { margin-bottom: 10px; }
-        .a-list li::marker { color: var(--highlight); }
-        .a-single { font-size: 1.3rem; border-left: 4px solid var(--highlight); padding-left: 15px; width: 100%; }
-
         .hidden { display: none; }
     </style>
 </head>
 <body>
+
 <div class="container">
     <div id="selection-ui">
         <h2>Historie - Moje témata</h2>
         <div class="deck-menu">
             <div id="deck-list-ui"></div>
             <button class="btn-main" onclick="startSession()">Spustit vybrané 🚀</button>
-            <button class="btn-alt" onclick="showDeckEditor()">➕ Vytvořit nové téma</button>
+            <button class="btn-alt" style="background:var(--primary)" onclick="showDeckEditor()">➕ Vytvořit nové téma</button>
         </div>
     </div>
 
     <div id="deck-editor-ui" class="admin-panel hidden">
         <h3 id="edit-title">Nové téma</h3>
-        <input type="text" id="deck-name-input" placeholder="např. Byzantská říše">
+        <input type="text" id="deck-name-input" placeholder="Název tématu..." style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;">
         <div id="card-editor-part" class="hidden">
-            <hr>
-            <input type="text" id="card-q" placeholder="Otázka" style="margin-top:10px;">
-            <textarea id="card-a" rows="2" placeholder="Odpověď" style="margin-top:10px;"></textarea>
+            <hr style="margin:20px 0;">
+            <input type="text" id="card-q" placeholder="Otázka" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc; margin-bottom:10px;">
+            <textarea id="card-a" rows="2" placeholder="Odpověď (více řádků = odrážky)" style="width:100%; padding:10px; border-radius:8px; border:1px solid #ccc;"></textarea>
             <button class="btn-main" onclick="addCardToDeck()" style="margin-top:10px;">Uložit kartu</button>
-            <div id="current-deck-cards" style="margin-top:10px; font-size:0.8rem;"></div>
+            <p id="current-deck-cards" style="font-size:0.8rem; margin-top:10px;"></p>
         </div>
         <button class="btn-alt" id="confirm-deck-btn" onclick="confirmDeckName()">Další: Přidat karty</button>
         <button class="btn-alt" style="background:var(--gray)" onclick="location.reload()">Hotovo / Zpět</button>
@@ -107,38 +135,38 @@
         </div>
         <div class="controls-wrapper">
             <div id="ui-btns" class="controls">
-                <button class="srs-btn b-0" onclick="processSRS(0)">Znovu</button>
-                <button class="srs-btn b-1" onclick="processSRS(3)">Těžké</button>
-                <button class="srs-btn b-2" onclick="processSRS(4)">Dobré</button>
-                <button class="srs-btn b-3" onclick="processSRS(5)">Snadné</button>
+                <button class="srs-btn b-0" onclick="processSRS(0)">Znovu<span>&lt;1m</span></button>
+                <button class="srs-btn b-1" id="label-hard" onclick="processSRS(3)">Těžké<span>10m</span></button>
+                <button class="srs-btn b-2" id="label-good" onclick="processSRS(4)">Dobré<span>1d</span></button>
+                <button class="srs-btn b-3" id="label-easy" onclick="processSRS(5)">Snadné<span>4d</span></button>
             </div>
         </div>
     </div>
 
     <div id="done-ui" class="hidden" style="text-align:center; padding: 40px 0;">
-        <h3>Hotovo! 🌟</h3>
-        <button class="btn-main" onclick="location.reload()">Zpět</button>
+        <h3>Pro dnešek hotovo! 🌟</h3>
+        <button class="btn-main" onclick="location.reload()">Zpět na výběr</button>
     </div>
 
     <div class="admin-panel">
-        <h3>📂 Správa dat</h3>
-        <button onclick="exportAll()" style="font-size:0.8rem; padding:8px;">Exportovat vše</button>
-        <button onclick="document.getElementById('import-file').click()" style="font-size:0.8rem; padding:8px;">Importovat JSON</button>
+        <button onclick="exportAll()" style="font-size:0.75rem; padding:8px;">Zálohovat JSON</button>
+        <button onclick="document.getElementById('import-file').click()" style="font-size:0.75rem; padding:8px;">Importovat JSON</button>
         <input type="file" id="import-file" class="hidden" onchange="importDeck(event)">
-        <button onclick="fullReset()" style="color:var(--danger); background:none; border:none; font-size:0.7rem; cursor:pointer; margin-top:10px; display:block;">Smazat vše</button>
+        <button onclick="fullReset()" style="color:var(--danger); background:none; border:none; font-size:0.75rem; cursor:pointer; margin-top:10px;">Resetovat pokrok</button>
     </div>
 </div>
 
 <script>
-    // PŘEDINSTALOVANÝ BALÍČEK
-    const PREINSTALLED_DECK = {
+    if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+
+    const PREINSTALLED = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."] },
             { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."] },
             { q: "Ve kterém století se zrodil islám?", a: ["V 7. století."] },
             { q: "Kdo je podle islámu jediný Bůh a kdo je jeho prorok?", a: ["Bůh: Alláh", "Prorok: Muhammad (Mohamed)"] },
             { q: "Jak se jmenuje posvátná kniha muslimů?", a: ["Korán."] },
-            { q: "Vyjmenuj 5 pilířů islámu.", a: ["Víra v jednoho Boha - Alláha", "Modlitba 5x denně", "Almužna chudým", "Půst v měsíci Ramadánu", "Pouť do Mekky"] },
+            { q: "Vyjmenuj 5 pilířů islámu.", a: ["Víra v jednoho Boha - Alláha", "Modlitba 5x denně", "Almužna chudým", "Půst v měsíci Ramadánu", "Pouť do Mekky jednou za život"] },
             { q: "Co je to chalífát?", a: ["Jednotná arabská říše v čele s chalífou."] },
             { q: "Kam až sahala Arabská říše v době rozmachu?", a: ["Od Atlantiku přes severní Afriku až k Indii."] },
             { q: "Které evropské státy leží na Pyrenejském poloostrově?", a: ["Španělsko", "Portugalsko"] },
@@ -148,21 +176,19 @@
             { q: "Proč mají islámské stavby jen geometrické vzory?", a: ["Protože Korán zakazuje zobrazovat lidské postavy."] },
             { q: "Jak se nazývá štíhlá věž u mešity?", a: ["Minaret."] },
             { q: "Které město je nejposvátnější pro muslimy?", a: ["Mekka (s chrámem Ka'ba)."] },
-	    	{ q: "Jak se nazývají vyznavači islámu?", a: ["Muslimové."] }
+	    { q: "Jak se nazývají vyznavači islámu?", a: ["Muslimové."] }
         ]
     };
 
-    let decks = {}; let activeSessionCards = []; let currentIdx = -1; let transitioning = false; let editingDeckName = "";
+    let decks = {}; let activeCards = []; let currentIdx = -1; let transitioning = false; let editingDeck = "";
 
     function init() {
-        const saved = localStorage.getItem('historie_v17');
-        if (saved) {
-            decks = JSON.parse(saved);
-        } else {
-            // První spuštění: Nahrajeme Arabskou říši
-            for (let name in PREINSTALLED_DECK) {
-                decks[name] = PREINSTALLED_DECK[name].map((c, i) => ({
-                    ...c, id: Date.now() + i, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: name
+        const saved = localStorage.getItem('historie_v18');
+        if (saved) { decks = JSON.parse(saved); } 
+        else {
+            for (let name in PREINSTALLED) {
+                decks[name] = PREINSTALLED[name].map((c, i) => ({
+                    ...c, id: name + i + Date.now(), nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: name
                 }));
             }
             save();
@@ -174,103 +200,136 @@
         const container = document.getElementById('deck-list-ui');
         container.innerHTML = "";
         Object.keys(decks).forEach(name => {
-            const dueCount = decks[name].filter(c => c.nextReview <= Date.now()).length;
+            const due = decks[name].filter(c => c.nextReview <= Date.now()).length;
             container.innerHTML += `
                 <div class="deck-option">
                     <input type="checkbox" value="${name}" checked>
                     <div class="deck-info" onclick="editExistingDeck('${name}')">
                         <span class="deck-name">${name} ✏️</span>
-                        <span class="deck-count">Karet: ${decks[name].length} | K opakování: ${dueCount}</span>
+                        <span class="deck-count">Karet: ${decks[name].length} | K opakování: ${due}</span>
                     </div>
-                    <span onclick="deleteDeck('${name}')" style="color:var(--danger); cursor:pointer; margin-left:10px;">&times;</span>
                 </div>`;
         });
     }
 
-    function showDeckEditor() {
-        document.getElementById('selection-ui').classList.add('hidden');
-        document.getElementById('deck-editor-ui').classList.remove('hidden');
-        document.getElementById('edit-title').innerText = "Nové téma";
-        document.getElementById('card-editor-part').classList.add('hidden');
-        document.getElementById('confirm-deck-btn').classList.remove('hidden');
-        document.getElementById('deck-name-input').disabled = false;
-        document.getElementById('deck-name-input').value = "";
-    }
-
-    function confirmDeckName() {
-        const name = document.getElementById('deck-name-input').value.trim();
-        if (!name) return; editingDeckName = name;
-        if (!decks[editingDeckName]) decks[editingDeckName] = [];
-        document.getElementById('deck-name-input').disabled = true;
-        document.getElementById('confirm-deck-btn').classList.add('hidden');
-        document.getElementById('card-editor-part').classList.remove('hidden');
-        updateCardListInEditor();
-    }
-
-    function addCardToDeck() {
-        const q = document.getElementById('card-q').value.trim();
-        const a = document.getElementById('card-a').value.trim();
-        if (!q || !a) return;
-        decks[editingDeckName].push({ q, a: a.split('\n'), id: Date.now(), nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: editingDeckName });
-        save(); document.getElementById('card-q').value = ""; document.getElementById('card-a').value = ""; updateCardListInEditor();
-    }
-
-    function updateCardListInEditor() { document.getElementById('current-deck-cards').innerText = "Karet v tématu: " + decks[editingDeckName].length; }
-
-    function editExistingDeck(name) { showDeckEditor(); document.getElementById('deck-name-input').value = name; confirmDeckName(); document.getElementById('edit-title').innerText = "Upravit: " + name; }
-
-    function deleteDeck(name) { if (confirm("Smazat " + name + "?")) { delete decks[name]; save(); renderDeckSelector(); } }
-
     function startSession() {
         const selected = Array.from(document.querySelectorAll('.deck-option input:checked')).map(i => i.value);
         if (selected.length === 0) return;
-        activeSessionCards = []; selected.forEach(name => { activeSessionCards = activeSessionCards.concat(decks[name]); });
-        document.getElementById('selection-ui').classList.add('hidden'); renderCard();
+        activeCards = []; selected.forEach(name => { activeCards = activeCards.concat(decks[name]); });
+        document.getElementById('selection-ui').classList.add('hidden');
+        renderCard();
     }
 
     function renderCard() {
-        const now = Date.now(); const due = activeSessionCards.filter(c => c.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview);
-        document.getElementById('s-new').innerText = activeSessionCards.filter(c => c.reps === 0).length;
+        const now = Date.now(); 
+        const due = activeCards.filter(c => c.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview);
+        
+        document.getElementById('s-new').innerText = activeCards.filter(c => c.reps === 0).length;
         document.getElementById('s-rev').innerText = due.length;
-        if (due.length === 0) { document.getElementById('learning-ui').classList.add('hidden'); document.getElementById('done-ui').classList.remove('hidden'); return; }
+
+        if (due.length === 0) {
+            document.getElementById('learning-ui').classList.add('hidden');
+            document.getElementById('done-ui').classList.remove('hidden'); return;
+        }
+
         const cData = due[0];
-        document.getElementById('f-content').innerHTML = `<div style="font-size:0.7rem; color:var(--accent); margin-bottom:10px;">${cData.deck.toUpperCase()}</div><div class="q-text">${cData.q}</div>`;
-        document.getElementById('b-content').innerHTML = ""; document.getElementById('card-element').classList.remove('flipped'); document.getElementById('ui-btns').classList.remove('visible'); document.getElementById('learning-ui').classList.remove('hidden'); transitioning = false;
+        updateLabels(cData);
+
+        document.getElementById('f-content').innerHTML = `<div class="deck-label">${cData.deck}</div><div class="q-text">${cData.q}</div>`;
+        document.getElementById('b-content').innerHTML = ""; 
+        document.getElementById('card-element').classList.remove('flipped');
+        document.getElementById('ui-btns').classList.remove('visible');
+        document.getElementById('learning-ui').classList.remove('hidden');
+        transitioning = false;
+    }
+
+    function updateLabels(card) {
+        const calc = (q) => {
+            if (q === 0) return "<1m";
+            if (q === 3) return card.reps === 0 ? "10m" : Math.round(card.interval * 1.2) + "d";
+            if (card.reps === 0) return q === 5 ? "4d" : "1d";
+            if (card.reps === 1) return "6d";
+            return Math.round(card.interval * card.ef) + "d";
+        };
+        document.getElementById('label-hard').querySelector('span').innerText = calc(3);
+        document.getElementById('label-good').querySelector('span').innerText = calc(4);
+        document.getElementById('label-easy').querySelector('span').innerText = calc(5);
     }
 
     function handleFlip() {
         if (document.getElementById('card-element').classList.contains('flipped') || transitioning) return;
-        transitioning = true; document.getElementById('card-element').classList.add('flipped');
+        transitioning = true;
+        document.getElementById('card-element').classList.add('flipped');
         setTimeout(() => {
-            const now = Date.now(); const due = activeSessionCards.filter(c => c.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview); const c = due[0];
-            document.getElementById('b-content').innerHTML = c.a.length > 1 ? `<ul class="a-list">${c.a.map(i => `<li>${i}</li>`).join('')}</ul>` : `<div class="a-single">${c.a[0]}</div>`;
-            document.getElementById('controls-element').classList.add('visible'); transitioning = false;
+            const now = Date.now();
+            const due = activeCards.filter(c => c.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview);
+            const c = due[0];
+            document.getElementById('b-content').innerHTML = c.a.length > 1 
+                ? `<ul class="a-list">${c.a.map(i => `<li>${i}</li>`).join('')}</ul>`
+                : `<div class="a-single">${c.a[0]}</div>`;
+            document.getElementById('ui-btns').classList.add('visible');
+            transitioning = false;
         }, 600);
     }
 
     function processSRS(q) {
-        if (transitioning) return; const now = Date.now(); const due = activeSessionCards.filter(c => c.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview); let c = due[0];
-        if (q === 0) { c.reps = 0; c.interval = 0; c.nextReview = Date.now(); } 
-        else {
-            if (c.reps === 0) c.interval = (q === 5) ? 4 : 1; else if (c.reps === 1) c.interval = 6; else c.interval = Math.round(c.interval * c.ef);
-            c.reps++; c.ef = Math.max(1.3, c.ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02))); c.nextReview = Date.now() + (c.interval * 86400000);
+        if (transitioning) return;
+        const now = Date.now();
+        const due = activeCards.filter(c => c.nextReview <= now).sort((a,b) => a.nextReview - b.nextReview);
+        let c = due[0];
+
+        // --- PLNÝ SM-2 ALGORITMUS ---
+        if (q < 3) {
+            c.reps = 0; c.interval = 0; c.nextReview = Date.now();
+        } else {
+            if (c.reps === 0) {
+                if (q === 3) c.interval = 0.007; // 10 min
+                else if (q === 4) c.interval = 1;
+                else c.interval = 4;
+            } else if (c.reps === 1) {
+                c.interval = 6;
+            } else {
+                c.interval = Math.round(c.interval * c.ef);
+            }
+            c.reps++;
+            c.ef = Math.max(1.3, c.ef + (0.1 - (5 - q) * (0.08 + (5 - q) * 0.02)));
+            c.nextReview = Date.now() + (c.interval * 86400000);
         }
-        const idx = decks[c.deck].findIndex(item => item.id === c.id); decks[c.deck][idx] = c; save(); renderCard();
+
+        const idx = decks[c.deck].findIndex(item => item.id === c.id);
+        decks[c.deck][idx] = c;
+        save(); renderCard();
     }
 
-    function save() { localStorage.setItem('historie_v17', JSON.stringify(decks)); }
-    function exportAll() { const blob = new Blob([JSON.stringify(decks, null, 2)], { type: "application/json" }); const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "historie_zaloha.json"; a.click(); }
+    // Pomocné funkce Editoru
+    function showDeckEditor() { document.getElementById('selection-ui').classList.add('hidden'); document.getElementById('deck-editor-ui').classList.remove('hidden'); }
+    function confirmDeckName() { 
+        editingDeck = document.getElementById('deck-name-input').value.trim();
+        if (!editingDeck) return;
+        if (!decks[editingDeck]) decks[editingDeck] = [];
+        document.getElementById('card-editor-part').classList.remove('hidden');
+        document.getElementById('confirm-deck-btn').classList.add('hidden');
+    }
+    function addCardToDeck() {
+        const q = document.getElementById('card-q').value; const a = document.getElementById('card-a').value;
+        if(!q || !a) return;
+        decks[editingDeck].push({ q, a: a.split('\n'), id: Date.now(), nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: editingDeck });
+        save(); document.getElementById('card-q').value = ""; document.getElementById('card-a').value = "";
+        document.getElementById('current-deck-cards').innerText = "Karet: " + decks[editingDeck].length;
+    }
+    function save() { localStorage.setItem('historie_v18', JSON.stringify(decks)); }
+    function fullReset() { if(confirm("Smazat vše?")) { localStorage.removeItem('historie_v18'); location.reload(); } }
+    function exportAll() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(decks)], {type:"application/json"})); a.download="historie.json"; a.click(); }
     function importDeck(e) {
         const reader = new FileReader(); reader.onload = (ev) => {
-            const imported = JSON.parse(ev.target.result);
-            if (Array.isArray(imported)) { const name = prompt("Název tématu?"); if (name) decks[name] = imported.map((c, i) => ({ ...c, id: Date.now() + i, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: name })); } 
-            else { decks = Object.assign(decks, imported); }
+            const data = JSON.parse(ev.target.result);
+            if (Array.isArray(data)) {
+                const n = prompt("Název?"); if(n) decks[n] = data.map(c => ({...c, id:Date.now()+Math.random(), nextReview:Date.now(), ef:2.5, reps:0, interval:0, deck:n}));
+            } else { decks = Object.assign(decks, data); }
             save(); location.reload();
         }; reader.readAsText(e.target.files[0]);
     }
-    function fullReset() { if(confirm("Smazat vše?")) { localStorage.removeItem('historie_v17'); location.reload(); } }
     init();
 </script>
 </body>
-
 </html>
