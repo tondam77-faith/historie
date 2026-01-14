@@ -1,0 +1,16 @@
+{
+  "short_name": "Historie",
+  "name": "Historie - Smart SRS",
+  "icons": [
+    {
+      "src": "history.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "index.html",
+  "background_color": "#fdfbf7",
+  "display": "standalone",
+  "scope": "./",
+  "theme_color": "#1a3a5a"
+}
