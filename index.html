@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a3a5a">
-    <title>Historie - Smart SRS v28</title>
+    <title>Historie - Smart SRS v29</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -132,13 +132,13 @@
                 <span class="input-label">Odpověď</span>
                 <textarea id="in-card-a" rows="3" placeholder="Zadej odpověď (více řádků vytvoří odrážky)"></textarea>
                 <button class="btn-main" id="btn-save-card" onclick="saveCard()" style="padding:10px; font-size:0.9rem;">Uložit kartu</button>
-                <button class="btn-utility" id="btn-cancel" style="display:none; width:100%; margin-top:5px;" onclick="clearForm()">Zrušit úpravy</button>
+                <button class="btn-utility" id="btn-cancel" style="display:none; width:100%; margin-top:5px;" onclick="clearForm()">Zrušit úpravu</button>
             </div>
             <h4 style="margin:20px 0 5px 0;">Karty v balíčku:</h4>
             <div id="editor-card-list" style="max-height:200px; overflow-y:auto; border:1px solid #ddd; border-radius:10px;"></div>
         </div>
         <button class="btn-main" id="btn-next" onclick="confirmName()">Další: Spravovat karty</button>
-        <button class="btn-utility" style="width:100%; margin-top:10px;" onclick="location.reload()">Zpět</button>
+        <button class="btn-utility" style="width:100%; margin-top:10px;" onclick="location.reload()">Zpět do menu</button>
     </div>
 
     <div class="admin-panel" style="background:#eee;">
@@ -180,7 +180,7 @@
 
     const INITIAL_CONTENT = {
         "Arabská říše": [
-            { q: "Kdo tvořili většinu obyvatel Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
+            { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."], id: 2, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Ve kterém století se zrodil islám?", a: ["V 7. století."], id: 3, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Kdo je podle islámu jediný Bůh a kdo je jeho prorok?", a: ["Bůh: Alláh", "Prorok: Muhammad (Mohamed)"], id: 4, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
@@ -190,9 +190,9 @@
             { q: "Kam až sahala Arabská říše v době rozmachu?", a: ["Od Atlantiku přes severní Afriku až k Indii."], id: 8, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Které evropské státy leží na Pyrenejském poloostrově?", a: ["Španělsko", "Portugalsko"], id: 9, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Kdo popsal v 10. stol. poprvé Prahu?", a: ["Arabský kupec Ibrahim ibn Jákub."], id: 10, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "V jakých vědách Arabové vynikali?", a: ["Matematika a fyzika", "Zeměpis", "Lékařství"], id: 11, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
+            { q: "V jakých vědách Arabové vynikali?", a: ["Matematika", "Fyzika", "Zeměpis", "Lékařství"], id: 11, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Jaké nové plodiny přinesli Arabové do Evropy?", a: ["Rýže", "Bavlna", "Citrony a pomeranče"], id: 12, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Proč mají islámské stavby jen geometrické vzory?", a: ["Protože Korán zakazuje zobrazovat lidské postavy."], id: 13, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
+            { q: "Proč mají islámské stavby jen geometrické vzory?", a: ["Korán zakazuje zobrazovat lidské postavy."], id: 13, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Jak se nazývá štíhlá věž u mešity?", a: ["Minaret."], id: 14, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
             { q: "Které město je nejposvátnější pro muslimy?", a: ["Mekka."], id: 15, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false }
         ]
@@ -285,8 +285,40 @@
     function loadEdit(id) { const c = decks[activeDeck].find(i=>i.id==id); document.getElementById('in-card-q').value = c.q; document.getElementById('in-card-a').value = c.a.join('\n'); document.getElementById('in-card-id').value = c.id; document.getElementById('btn-cancel').style.display = "block"; }
     function clearForm() { document.getElementById('in-card-q').value = ""; document.getElementById('in-card-a').value = ""; document.getElementById('in-card-id').value = ""; document.getElementById('btn-cancel').style.display = "none"; }
     function delCard(id) { if(confirm("Smazat?")){ decks[activeDeck] = decks[activeDeck].filter(i=>i.id!=id); dbSave(decks); renderEditorList(); } }
-    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(decks)])); a.download="historie_srs.json"; a.click(); }
-    function importData(e) { const r = new FileReader(); r.onload = (v) => { decks = JSON.parse(v.target.result); dbSave(decks); location.reload(); }; r.readAsText(e.target.files[0]); }
+    
+    // --- OPRAVENÝ INTELIGENTNÍ IMPORT ---
+    async function importData(e) {
+        const r = new FileReader();
+        r.onload = async (v) => {
+            try {
+                const importedData = JSON.parse(v.target.result);
+                if (Array.isArray(importedData)) {
+                    // Jde o jeden balíček (pole karet) - PŘIDÁME HO
+                    const name = prompt("Jak se má toto nové téma jmenovat?");
+                    if (name) {
+                        decks[name] = importedData.map(c => ({
+                            ...c,
+                            deck: name,
+                            id: c.id || Date.now() + Math.random(),
+                            nextReview: Date.now()
+                        }));
+                        await dbSave(decks);
+                        location.reload();
+                    }
+                } else {
+                    // Jde o objekt (záloha více témat) - SLOUČÍME S EXISTUJÍCÍMI
+                    decks = Object.assign({}, decks, importedData);
+                    await dbSave(decks);
+                    location.reload();
+                }
+            } catch (err) {
+                alert("Chyba při nahrávání souboru. Zkontroluj formát JSON.");
+            }
+        };
+        r.readAsText(e.target.files[0]);
+    }
+
+    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(decks)])); a.download="historie_zaloha.json"; a.click(); }
     function fullReset() { if(confirm("Smazat vše?")){ indexedDB.deleteDatabase(DB_NAME); location.reload(); } }
     init();
 </script>
