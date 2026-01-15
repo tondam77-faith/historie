@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#1a3a5a">
-    <title>Historie - Smart SRS v31</title>
+    <title>Historie - Smart SRS v32</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -47,6 +47,7 @@
         .card-front { background: var(--card-front); color: var(--primary); border: 1px solid #eee; }
         .card-back { background: var(--primary); color: #ffffff; transform: rotateY(180deg); align-items: flex-start; text-align: left; overflow-y: auto; }
 
+        /* --- TEXTY NA KARTĚ --- */
         .q-text { font-size: 1.5rem; font-weight: bold; line-height: 1.3; }
         .a-list { margin: 0; padding-left: 25px; font-size: 1.25rem; width: 100%; }
         .a-list li { margin-bottom: 12px; line-height: 1.4; }
@@ -56,10 +57,17 @@
         /* --- TLAČÍTKA --- */
         .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 1.1rem; cursor: pointer; margin-top: 10px; }
         .btn-alt { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: bold; width: fit-content; align-self: flex-start; margin-top: 10px; }
-        .btn-utility { background: var(--gray); color: white; border: none; padding: 8px 12px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; }
-        .btn-reset { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 6px; cursor: pointer; font-size: 0.75rem; display: block; margin: 20px auto 0; opacity: 0.7; }
+        .btn-utility { background: var(--gray); color: white; border: none; padding: 10px 15px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; display: flex; align-items: center; gap: 8px; }
+        
+        .btn-reset { 
+            background: none; border: 1px solid var(--danger); color: var(--danger); 
+            padding: 8px 15px; border-radius: 6px; cursor: pointer; 
+            font-size: 0.75rem; display: block; margin: 25px auto 0; opacity: 0.7; 
+        }
         .btn-reset:hover { background: var(--danger); color: white; opacity: 1; }
 
+        /* OPRAVA: Pevná výška pro zamezení posouvání menu */
+        .controls-wrapper { min-height: 110px; display: flex; align-items: center; width: 100%; }
         .srs-btn { border: none; padding: 12px 2px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; }
         .srs-btn span { font-size: 0.65rem; font-weight: normal; margin-top: 4px; opacity: 0.9; }
         .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--success); }
@@ -102,14 +110,16 @@
                 <div class="card-back" id="b-content"></div>
             </div>
         </div>
-        <div id="ui-btns-container" class="hidden" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%;">
-            <button class="srs-btn b-0" onclick="handleSRS(0)">Znovu<span>&lt;1m</span></button>
-            <button class="srs-btn b-1" id="l-hard" onclick="handleSRS(3)">Těžké<span>10m</span></button>
-            <button class="srs-btn b-2" id="l-good" onclick="handleSRS(4)">Dobré<span>1d</span></button>
-            <button class="srs-btn b-3" id="l-easy" onclick="handleSRS(5)">Snadné<span>4d</span></button>
-        </div>
-        <div id="flip-hint" style="margin-top: 15px; font-size: 0.85rem; color: var(--gray);">
-            Klikni na kartu pro otočení a zobrazení odpovědi.
+        <div class="controls-wrapper">
+            <div id="ui-btns-container" class="hidden" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; width: 100%;">
+                <button class="srs-btn b-0" onclick="handleSRS(0)">Znovu<span>&lt;1m</span></button>
+                <button class="srs-btn b-1" id="l-hard" onclick="handleSRS(3)">Těžké<span>10m</span></button>
+                <button class="srs-btn b-2" id="l-good" onclick="handleSRS(4)">Dobré<span>1d</span></button>
+                <button class="srs-btn b-3" id="l-easy" onclick="handleSRS(5)">Snadné<span>4d</span></button>
+            </div>
+            <div id="flip-hint" style="width: 100%; text-align: center; font-size: 0.85rem; color: var(--gray);">
+                Klikni na kartu pro zobrazení odpovědi.
+            </div>
         </div>
     </div>
 
@@ -122,22 +132,31 @@
                 <h4 style="margin-top:0; color:var(--accent);">Nová karta</h4>
                 <input type="hidden" id="in-card-id">
                 <span class="input-label">Otázka</span>
-                <input type="text" id="in-card-q" placeholder="Otázka...">
+                <input type="text" id="in-card-q" placeholder="Zadej otázku...">
                 <span class="input-label">Odpověď</span>
-                <textarea id="in-card-a" rows="3" placeholder="Odpověď..."></textarea>
+                <textarea id="in-card-a" rows="3" placeholder="Zadej odpověď..."></textarea>
                 <button class="btn-main" onclick="saveCard()" style="padding:10px; font-size:0.9rem;">Uložit kartu</button>
             </div>
             <div id="editor-card-list" style="max-height:200px; overflow-y:auto; margin-top:10px; border:1px solid #ddd; border-radius:10px;"></div>
         </div>
         <button class="btn-main" id="btn-next" onclick="confirmName()">Další: Spravovat karty</button>
-        <button class="btn-utility" style="width:100%; margin-top:10px;" onclick="location.reload()">Zpět</button>
+        <button class="btn-utility" style="width:100%; margin-top:10px;" onclick="location.reload()">Zpět do menu</button>
+    </div>
+
+    <div id="ui-done" class="hidden" style="padding:40px 0;">
+        <h3>Dnešní cíl splněn! 🎉</h3>
+        <p style="color: #666; margin-bottom: 25px;">Skvělá práce, tvůj mozek si to teď musí uležet.</p>
+        <button class="btn-main" onclick="location.reload()">Zpět na přehled témat</button>
+        <button id="btn-continue" class="btn-alt" style="width: 100%; align-self: center;" onclick="startSession()">Pokračovat v dalších 20 kartách</button>
     </div>
 
     <div class="admin-panel" style="background:#eee;">
         <h4 style="margin:0 0 10px 0;">📂 Správa dat</h4>
-        <button class="btn-utility" onclick="exportData()">💾 Export JSON</button>
-        <button class="btn-utility" onclick="document.getElementById('file-in').click()">📂 Import JSON</button>
-        <input type="file" id="file-in" accept=".json" class="hidden" onchange="importData(event)">
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+            <button class="btn-utility" onclick="exportData()">💾 Export JSON</button>
+            <button class="btn-utility" onclick="document.getElementById('file-in').click()">📂 Import JSON</button>
+        </div>
+        <input type="file" id="file-in" accept=".json,application/json" class="hidden" onchange="importData(event)">
         <button class="btn-reset" onclick="fullReset()">🗑️ Resetovat aplikaci</button>
     </div>
 </div>
@@ -169,6 +188,7 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
+    // Všech 15 karet Arabské říše s unikátními ID
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo tvořili většinu obyvatel Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
@@ -218,12 +238,25 @@
         const sel = Array.from(document.querySelectorAll('#deck-list input:checked')).map(i => i.value);
         if(!sel.length) return; sessionCards = []; sel.forEach(n => sessionCards = sessionCards.concat(decks[n]));
         sessionCards = sessionCards.filter(c => c.nextReview <= Date.now()).sort((a,b)=>a.nextReview - b.nextReview).slice(0, sessionLimit);
-        if(!sessionCards.length) return alert("Dnes nemáš co opakovat!");
-        sessionIdx = 0; document.getElementById('ui-menu').classList.add('hidden'); renderCard();
+        
+        if(!sessionCards.length) {
+            alert("Dnes nemáš co opakovat!");
+            return;
+        }
+        sessionIdx = 0; 
+        document.getElementById('ui-menu').classList.add('hidden'); 
+        document.getElementById('ui-done').classList.add('hidden');
+        renderCard();
     }
 
     function renderCard() {
-        if (sessionIdx >= sessionCards.length) { document.getElementById('ui-learning').classList.add('hidden'); document.getElementById('ui-done').classList.remove('hidden'); return; }
+        if (sessionIdx >= sessionCards.length) { 
+            document.getElementById('ui-learning').classList.add('hidden'); 
+            const hasMore = checkRemainingDue();
+            document.getElementById('btn-continue').classList.toggle('hidden', !hasMore);
+            document.getElementById('ui-done').classList.remove('hidden'); 
+            return; 
+        }
         const c = sessionCards[sessionIdx]; updateLabels(c);
         document.getElementById('ui-btns-container').classList.add('hidden');
         document.getElementById('flip-hint').classList.remove('hidden');
@@ -231,6 +264,12 @@
         document.getElementById('progress-fill').style.width = `${(sessionIdx / sessionCards.length)*100}%`;
         document.getElementById('f-content').innerHTML = `<div style="font-size:0.7rem; color:var(--accent); margin-bottom:5px; font-weight:bold;">${c.deck.toUpperCase()}</div><div class="q-text">${c.q}</div>`;
         document.getElementById('b-content').innerHTML = ""; document.getElementById('card-el').classList.remove('flipped'); document.getElementById('ui-learning').classList.remove('hidden'); transitioning = false;
+    }
+
+    function checkRemainingDue() {
+        const sel = Array.from(document.querySelectorAll('#deck-list input:checked')).map(i => i.value);
+        let all = []; sel.forEach(n => all = all.concat(decks[n]));
+        return all.filter(c => c.nextReview <= Date.now()).length > 0;
     }
 
     function handleSRS(q) {
@@ -251,9 +290,7 @@
         setTimeout(() => {
             const c = sessionCards[sessionIdx];
             document.getElementById('b-content').innerHTML = c.a.length > 1 ? `<ul class="a-list">${c.a.map(i=>`<li>${i}</li>`).join('')}</ul>` : `<div class="a-single">${c.a[0]}</div>`;
-            document.getElementById('ui-btns-container').classList.remove('hidden'); 
-            document.getElementById('flip-hint').classList.add('hidden');
-            transitioning = false;
+            document.getElementById('ui-btns-container').classList.remove('hidden'); document.getElementById('flip-hint').classList.add('hidden'); transitioning = false;
         }, 600);
     }
 
@@ -269,11 +306,11 @@
     function openEditor(n) { activeDeck = n; document.getElementById('ui-menu').classList.add('hidden'); document.getElementById('ui-editor').classList.remove('hidden'); document.getElementById('editor-title').innerText = "Upravit: " + n; document.getElementById('in-deck-name').value = n; confirmName(); }
     function confirmName() { const n = document.getElementById('in-deck-name').value.trim(); if(!n) return; if(!decks[n]) decks[n] = []; activeDeck = n; document.getElementById('in-deck-name').disabled = true; document.getElementById('btn-next').classList.add('hidden'); document.getElementById('card-form').classList.remove('hidden'); renderEditorList(); }
     function saveCard() { const q = document.getElementById('in-card-q').value.trim(), a = document.getElementById('in-card-a').value.trim(), id = document.getElementById('in-card-id').value; if(!q || !a) return; if(id){ const i = decks[activeDeck].findIndex(c=>c.id==id); decks[activeDeck][i].q = q; decks[activeDeck][i].a = a.split('\n'); } else { decks[activeDeck].push({ q, a: a.split('\n'), id: Date.now(), nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: activeDeck, archived: false }); } dbSave(decks); clearForm(); renderEditorList(); }
-    function renderEditorList() { document.getElementById('editor-card-list').innerHTML = decks[activeDeck].map(c => `<div style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:white; font-size:0.85rem;"><div>${c.q}</div><div><span onclick="loadEdit(${c.id})" style="cursor:pointer; margin-right:10px;">✏️</span><span onclick="delCard(${c.id})" style="cursor:pointer; color:red;">🗑️</span></div></div>`).join(''); }
-    function loadEdit(id) { const c = decks[activeDeck].find(i=>i.id==id); document.getElementById('in-card-q').value = c.q; document.getElementById('in-card-a').value = c.a.join('\n'); document.getElementById('in-card-id').value = c.id; }
+    function renderEditorList() { document.getElementById('editor-card-list').innerHTML = decks[activeDeck].map(c => `<div class="list-item-edit" style="display:flex; justify-content:space-between; padding:10px; border-bottom:1px solid #eee; background:white; font-size:0.85rem;"><div>${c.q}</div><div><span onclick="loadEdit(${c.id})" style="cursor:pointer; margin-right:10px;">✏️</span><span onclick="delCard(${c.id})" style="cursor:pointer; color:red;">🗑️</span></div></div>`).join(''); }
+    function loadEdit(id) { const c = decks[activeDeck].find(i=>i.id==id); document.getElementById('in-card-q').value = c.q; document.getElementById('in-card-a').value = c.a.join('\n'); document.getElementById('in-card-id').value = c.id; document.getElementById('btn-cancel').style.display = "block"; }
     function clearForm() { document.getElementById('in-card-q').value = ""; document.getElementById('in-card-a').value = ""; document.getElementById('in-card-id').value = ""; }
     function delCard(id) { if(confirm("Smazat?")){ decks[activeDeck] = decks[activeDeck].filter(i=>i.id!=id); dbSave(decks); renderEditorList(); } }
-    
+    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(decks)])); a.download="historie_srs.json"; a.click(); }
     async function importData(e) {
         const r = new FileReader();
         r.onload = async (v) => {
@@ -287,8 +324,6 @@
         };
         r.readAsText(e.target.files[0]);
     }
-
-    function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(decks)])); a.download="historie_srs.json"; a.click(); }
     function fullReset() { if(confirm("Smazat vše?")){ indexedDB.deleteDatabase(DB_NAME); location.reload(); } }
     init();
 </script>
