@@ -65,7 +65,9 @@
         }
         .btn-reset:hover { background: var(--danger); color: white; opacity: 1; }
 
+        /* Fixní výška pro ovládací prvky - zabrání poskakování */
         .controls-wrapper { min-height: 110px; display: flex; align-items: center; width: 100%; }
+        
         .srs-btn { border: none; padding: 12px 2px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 0.8rem; display: flex; flex-direction: column; align-items: center; }
         .srs-btn span { font-size: 0.65rem; font-weight: normal; margin-top: 4px; opacity: 0.9; }
         .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--success); }
@@ -91,6 +93,11 @@
             <button class="btn-main" onclick="startSession()">Spustit dnešní cíl 🚀</button>
             <button class="btn-alt" onclick="openCreator()">➕ Nové téma</button>
         </div>
+
+        <div id="app-version" style="font-size: 0.75rem; color: #95a5a6; margin-bottom: 15px; opacity: 0.8;">
+            Načítám verzi...
+        </div>
+
         <div id="archived-section" class="hidden" style="margin-top:20px; opacity:0.7;">
             <h4 style="margin:0 0 10px 0;">Archiv:</h4>
             <div id="archived-list"></div>
@@ -161,6 +168,8 @@
 
 <script>
     let db;
+    // ZDE SE MĚNÍ ZOBRAZOVANÁ VERZE
+    const APP_VERSION_DISPLAY = "v33.0"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
 
     async function dbOpen() {
@@ -186,7 +195,7 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- DVA HLAVNÍ BALÍČKY ---
+    // --- HLAVNÍ OBSAH (Arabská říše + Slované) ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
@@ -228,11 +237,13 @@
         await dbOpen();
         if (navigator.storage && navigator.storage.persist) await navigator.storage.persist();
         
+        // ZOBRAZENÍ VERZE V MENU
+        const vEl = document.getElementById('app-version');
+        if(vEl) vEl.innerText = "Verze aplikace: " + APP_VERSION_DISPLAY;
+        
         const saved = await dbLoad();
         if (saved) {
-            // Pokud existují uložená data, použijeme je.
-            // Pokud je v databázi nový balíček, který v INITIAL_CONTENT je, tak ho tam necháme.
-            decks = saved;
+            decks = saved; 
         } else { 
             decks = INITIAL_CONTENT; 
             await dbSave(decks); 
