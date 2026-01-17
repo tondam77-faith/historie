@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#fdfbf7"> <title>Historie - Smart SRS v34</title>
+    <meta name="theme-color" content="#fdfbf7">
+    <title>Dějepis - Smart SRS v35</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -17,7 +18,6 @@
         body {
             font-family: 'Segoe UI', system-ui, sans-serif;
             background-color: var(--bg); margin: 0; 
-            /* ÚPRAVA LAYOUTU: Obsah začíná nahoře, roztahuje se na celou výšku */
             display: flex; flex-direction: column; align-items: center; 
             min-height: 100vh;
             padding: 15px; color: #2c3e50;
@@ -25,11 +25,9 @@
 
         .container { 
             width: 100%; max-width: 500px; text-align: center; 
-            /* Flexbox pro roztažení patičky dolů */
             display: flex; flex-direction: column; flex-grow: 1;
         }
 
-        /* Hlavní obsah se roztáhne a vytlačí patičku dolů */
         .content-wrap { flex-grow: 1; width: 100%; }
 
         /* --- MENU --- */
@@ -102,7 +100,7 @@
     <div class="content-wrap">
         
         <div id="ui-menu">
-            <h2 style="margin-bottom: 5px;">Historie - Smart SRS</h2>
+            <h2 style="margin-bottom: 5px;">Dějepis - Smart SRS</h2>
             <p style="margin: 0 0 20px 0; font-size: 0.9rem; opacity: 0.8;">Chytré opakování pro základní školu</p>
             
             <div class="deck-menu">
@@ -179,14 +177,16 @@
             <button id="btn-continue" class="btn-alt" style="width: 100%; align-self: center;" onclick="startSession()">Pokračovat v dalších 20</button>
         </div>
 
-    </div> <div class="app-footer">
+    </div>
+
+    <div class="app-footer">
         
         <div id="help-box" class="help-box hidden">
             <h4>🧠 Jak se učit chytře?</h4>
             <p>Tato aplikace funguje jako trenér tvé paměti. Ví přesně, kdy ti má kartu ukázat, abys ji nezapomněl.</p>
             <p><strong>Znovu:</strong> Vůbec jsem to nevěděl. (Ukážu ti to hned)</p>
-            <p><strong>Těžké:</strong> Vzpomínal jsem si těžko. (Ukážu zítra)</p>
-            <p><strong>Dobré:</strong> Věděl jsem to, ale musel jsem přemýšlet.</p>
+            <p><strong>Těžké:</strong> Vzpomínal jsem si těžko. (Ukážu za 10 minut)</p>
+            <p><strong>Dobré:</strong> Věděl jsem to, ale musel jsem přemýšlet. (Ukážu zítra)</p>
             <p><strong>Snadné:</strong> Vystřelil jsem to hned. (Ukážu až za pár dní)</p>
             <p><i>Stačí 5 minut denně. Nesnaž se vše naučit najednou, věř aplikaci. 😉</i></p>
             <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
@@ -195,7 +195,7 @@
         <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
         
         <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">
-            Verze aplikace: Načítám...
+            Verze aplikace: v35.0
         </div>
     </div>
 
@@ -203,7 +203,7 @@
 
 <script>
     let db;
-    const APP_VERSION_DISPLAY = "v34.0"; // NOVÁ VERZE
+    const APP_VERSION_DISPLAY = "v35.0"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
 
     async function dbOpen() {
@@ -229,7 +229,7 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- BALÍČKY ---
+    // --- HLAVNÍ OBSAH (Arabská říše + Slované) ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
@@ -270,10 +270,6 @@
     async function init() {
         await dbOpen();
         if (navigator.storage && navigator.storage.persist) await navigator.storage.persist();
-        
-        // ZOBRAZENÍ VERZE V MENU
-        const vEl = document.getElementById('app-version');
-        if(vEl) vEl.innerText = "Verze aplikace: " + APP_VERSION_DISPLAY;
         
         const saved = await dbLoad();
         if (saved) {
