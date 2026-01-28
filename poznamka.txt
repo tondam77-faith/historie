@@ -1,0 +1,54 @@
+Prompt pro tvorbu sad kartiček:
+Abych ti vždy vytvořil data, která tvůj nový Editor (v58) bez problémů "zkousne", stačí mi zadat instrukci v přesném formátu. Editor totiž očekává specifickou strukturu (např. že odpověď je seznam odrážek, ne jen text, a že tam jsou prázdná políčka pro obrázky).
+
+Ulož si tento "Příkaz pro AI" (tzv. Prompt) a vždy mi ho jen zkopíruj, když budeš chtít nové téma.
+
+📋 Zlatý příkaz (Prompt), který mi vždy dej:
+"Vytvoř mi sadu [POČET] otázek na téma [TÉMA] pro mou aplikaci. Výstup musí být pouze čistý JSON kód v následujícím formátu.
+
+Pravidla:
+
+Odpověď (a) musí být vždy pole řetězců (list), i kdyby tam byla jen jedna věta.
+
+Přidej prázdná pole qImg a aImg pro obrázky.
+
+Nepoužívej markdown (žádné ```json na začátku).
+
+Šablona: { "Název Tématu": [ { "q": "Znění otázky?", "a": [ "První bod odpovědi.", "Druhý bod odpovědi (nepovinný)." ], "qImg": "", "aImg": "" } ] } "
+
+💡 Proč to takto musí být? (Technické vysvětlení)
+Když mi zadáš tento příkaz, vytvořím kód, který Editor okamžitě pochopí:
+
+"Název Tématu": [...]: Editor rovnou založí nové téma s tímto názvem (nemusíš ho vypisovat ručně).
+
+"a": ["..."]: Tvůj editor i aplikace čekají seznam (array). Když to takto vygeneruji, v aplikaci se to krásně zobrazí s odrážkami.
+
+"qImg": "": Editor uvidí, že pole pro obrázek existuje, ale je prázdné. Díky tomu ti rovnou nabídne tlačítko "📷 Vložit obrázek".
+
+Příklad, jak bude vypadat můj výstup:
+Když mi napíšeš: „Vytvoř 3 otázky na téma Lucemburkové podle šablony“, já ti vygeneruji toto:
+
+JSON
+
+{
+  "Lucemburkové": [
+    {
+      "q": "Kdo byl prvním českým králem z rodu Lucemburků?",
+      "a": [
+        "Jan Lucemburský.",
+        "Nastoupil na trůn roku 1310."
+      ],
+      "qImg": "",
+      "aImg": ""
+    },
+    {
+      "q": "Jak se přezdívalo Janu Lucemburskému?",
+      "a": [
+        "Král cizinec.",
+        "Král diplomat."
+      ],
+      "qImg": "",
+      "aImg": ""
+    }
+  ]
+}
