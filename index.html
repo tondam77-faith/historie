@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="theme-color" content="#fdfbf7">
-    <title>Dějepis - Smart SRS v1.0</title>
+    <title>Dějepis - Smart SRS v1.1</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -44,7 +44,7 @@
         .stat-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-top: 4px; letter-spacing: 0.5px; }
-        .stat-streak-color { color: var(--accent); } /* Oranžový oheň */
+        .stat-streak-color { color: var(--accent); }
 
         .brain-bar-container { width: 100%; }
         .brain-bar { height: 10px; background: #eee; border-radius: 5px; display: flex; overflow: hidden; width: 100%; }
@@ -62,7 +62,7 @@
         .deck-name { font-weight: bold; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; line-height: 1.2; }
         .edit-icon { font-size: 1rem; opacity: 0.5; }
 
-        /* UČENÍ (Fixní layout v35) */
+        /* UČENÍ */
         #ui-learning { display: flex; flex-direction: column; height: 100%; padding: 15px; overflow-y: auto; }
         .stats-bar { display: flex; justify-content: space-around; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem; color: var(--primary); flex-shrink: 0; }
         .progress-container { width: 100%; height: 8px; background: #ddd; border-radius: 4px; margin-bottom: 20px; overflow: hidden; flex-shrink: 0; }
@@ -87,12 +87,10 @@
         .srs-btn span { font-size: 0.7rem; font-weight: normal; margin-top: 3px; opacity: 0.9; }
         .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--success); }
 
-        /* Tlačítka a Utility */
         .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 1.1rem; margin-top: 10px; cursor: pointer; }
         .btn-alt { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-utility { background: var(--gray); color: white; border: none; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight:bold; }
         
-        /* Editor & Footer */
         .card-creator-box { background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; margin-bottom: 15px; }
         .input-label { font-size: 0.75rem; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-top: 15px; display: block; }
         input[type="text"], textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ccc; font-family: inherit; font-size: 1rem; }
@@ -108,11 +106,20 @@
         .help-box h4 { margin: 0 0 10px 0; color: var(--accent); }
         .help-box p { font-size: 0.9rem; margin-bottom: 10px; line-height: 1.5; }
         .help-subtitle { font-weight: bold; color: var(--primary); margin-top: 15px; display: block; font-size: 0.9rem; }
-        
         .btn-reset { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 6px; font-size: 0.75rem; display: block; margin: 10px auto; cursor: pointer; }
+        
+        /* Loading Overlay */
+        #loader { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(255,255,255,0.9); z-index:999; display:none; justify-content:center; align-items:center; flex-direction:column; }
+        .spinner { border: 5px solid #f3f3f3; border-top: 5px solid var(--accent); border-radius: 50%; width: 50px; height: 50px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
+
+<div id="loader">
+    <div class="spinner"></div>
+    <p style="margin-top:15px; font-weight:bold; color:var(--primary);">Stahuji balíček...</p>
+</div>
 
 <div class="container">
     
@@ -122,20 +129,10 @@
         
         <div class="stats-dashboard">
             <div class="stats-grid">
-                <div class="stat-item">
-                    <span class="stat-val stat-streak-color" id="stat-streak">0</span>
-                    <span class="stat-label">🔥 Dní v řadě</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-val" id="stat-xp">0</span>
-                    <span class="stat-label">🏆 Zkušenosti</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-val" id="stat-mastered">0%</span>
-                    <span class="stat-label">🧠 Umím</span>
-                </div>
+                <div class="stat-item"><span class="stat-val stat-streak-color" id="stat-streak">0</span><span class="stat-label">🔥 Dní v řadě</span></div>
+                <div class="stat-item"><span class="stat-val" id="stat-xp">0</span><span class="stat-label">🏆 Zkušenosti</span></div>
+                <div class="stat-item"><span class="stat-val" id="stat-mastered">0%</span><span class="stat-label">🧠 Umím</span></div>
             </div>
-            
             <div class="brain-bar-container">
                 <div class="brain-bar">
                     <div id="bb-master" class="bb-part bb-master" style="width:0%"></div>
@@ -143,7 +140,7 @@
                     <div id="bb-new" class="bb-part bb-new" style="width:100%"></div>
                 </div>
                 <div class="brain-legend">
-                    <span><span style="color:var(--success)">●</span> Umím (14d+)</span>
+                    <span><span style="color:var(--success)">●</span> Umím</span>
                     <span><span style="color:var(--accent)">●</span> Trénuji</span>
                     <span><span style="color:#999">●</span> Nové</span>
                 </div>
@@ -176,39 +173,24 @@
             <div id="help-box" class="help-box hidden">
                 <h4>🧠 Jak se učit chytře?</h4>
                 <p>Odpovídej podle pravdy. Aplikace ti karty ukáže přesně tehdy, kdy je potřebuješ.</p>
-                
                 <span class="help-subtitle">Co znamenají tlačítka?</span>
                 <p><strong>Znovu:</strong> Nevěděl jsem. (Zopakuji ihned)</p>
                 <p><strong>Těžké:</strong> Vzpomínal jsem těžko. (Zopakuji za 10 min)</p>
                 <p><strong>Dobré:</strong> Věděl jsem. (Zopakuji zítra)</p>
                 <p><strong>Snadné:</strong> Vystřelil jsem to hned. (Zopakuji za 4 dny)</p>
-                
                 <span class="help-subtitle">Jak zazelenat graf?</span>
                 <p>Když budeš kartu umět dobře a interval se prodlouží nad 14 dní, karta se v grafu přesune do <span style="color:var(--success); font-weight:bold;">Zelené (Umím)</span>.</p>
-
                 <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
             </div>
             <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
-            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.0</div>
+            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.1</div>
         </div>
     </div>
 
     <div id="ui-learning" class="hidden">
-        <div class="stats-bar">
-            <span id="progress-text">Karta 1 z X</span>
-            <span onclick="closeLearning()" style="color:var(--accent); cursor:pointer;">Menu</span>
-        </div>
+        <div class="stats-bar"><span id="progress-text">Karta 1 z X</span><span onclick="closeLearning()" style="color:var(--accent); cursor:pointer;">Menu</span></div>
         <div class="progress-container"><div id="progress-fill" class="progress-fill"></div></div>
-        
-        <div class="card-area">
-            <div class="card-box" onclick="handleFlip()">
-                <div class="card" id="card-el">
-                    <div class="card-front" id="f-content"></div>
-                    <div class="card-back" id="b-content"></div>
-                </div>
-            </div>
-        </div>
-
+        <div class="card-area"><div class="card-box" onclick="handleFlip()"><div class="card" id="card-el"><div class="card-front" id="f-content"></div><div class="card-back" id="b-content"></div></div></div></div>
         <div class="controls-wrapper">
             <div id="ui-btns-container" class="hidden">
                 <button class="srs-btn b-0" onclick="handleSRS(0)">Znovu<span id="l-again">&lt;1m</span></button>
@@ -216,9 +198,7 @@
                 <button class="srs-btn b-2" onclick="handleSRS(4)">Dobré<span id="l-good">1d</span></button>
                 <button class="srs-btn b-3" onclick="handleSRS(5)">Snadné<span id="l-easy">4d</span></button>
             </div>
-            <div id="flip-hint" style="font-size: 0.85rem; color: var(--gray); text-align:center; margin-top:10px;">
-                Klikni na kartu pro zobrazení odpovědi.
-            </div>
+            <div id="flip-hint" style="font-size: 0.85rem; color: var(--gray); text-align:center; margin-top:10px;">Klikni na kartu pro zobrazení odpovědi.</div>
         </div>
     </div>
 
@@ -226,7 +206,6 @@
         <h3 id="editor-title" style="margin-top:0;">Editor tématu</h3>
         <span class="input-label" style="margin-top:0">Název balíčku</span>
         <input type="text" id="in-deck-name" placeholder="např. Byzantská říše">
-        
         <div id="card-form" class="hidden">
             <div class="card-creator-box">
                 <h4 style="margin-top:0; color:var(--accent);">Nová karta</h4>
@@ -259,12 +238,11 @@
         <button class="btn-main" style="width:auto; padding:15px 30px;" onclick="closeLearning()">Zpět na přehled</button>
         <button id="btn-continue" class="btn-alt" style="margin-top:15px;" onclick="startSession()">Pokračovat v dalších 20</button>
     </div>
-
 </div>
 
 <script>
     let db;
-    const APP_VERSION_DISPLAY = "v1.0"; 
+    const APP_VERSION_DISPLAY = "v1.1"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
 
     async function dbOpen() { return new Promise((resolve) => { const req = indexedDB.open(DB_NAME, DB_VERSION); req.onupgradeneeded = (e) => e.target.result.createObjectStore("state"); req.onsuccess = (e) => { db = e.target.result; resolve(); }; }); }
@@ -273,41 +251,14 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- INITIAL CONTENT (Obsah - verze 1.0) ---
+    // --- INITIAL CONTENT ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."], id: 2, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Ve kterém století se zrodil islám?", a: ["V 7. století."], id: 3, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Kdo je podle islámu jediný Bůh a kdo je jeho prorok?", a: ["Bůh: Alláh", "Prorok: Muhammad (Mohamed)"], id: 4, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Jak se jmenuje posvátná kniha muslimů?", a: ["Korán."], id: 5, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Vyjmenuj 5 pilířů islámu.", a: ["Víra v jednoho Boha - Alláha", "Modlitba 5x denně", "Almužna chudým", "Půst v měsíci Ramadánu", "Pouť do Mekky jednou za život"], id: 6, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Co je to chalífát?", a: ["Jednotná arabská říše v čele s chalífou."], id: 7, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Kam až sahala Arabská říše v době rozmachu?", a: ["Od Atlantiku přes severní Afriku až k Indii."], id: 8, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Které evropské státy leží na Pyrenejském poloostrově?", a: ["Španělsko", "Portugalsko"], id: 9, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Kdo byl Ibrahim ibn Jákub?", a: ["Kupec, který v 10. stol. napsal první popis Prahy."], id: 10, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "V jakých vědách Arabové vynikali?", a: ["Matematika a fyzika", "Zeměpis", "Lékařství"], id: 11, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Jaké nové plodiny přinesli Arabové do Evropy?", a: ["Rýže", "Bavlna", "Citrony a pomeranče"], id: 12, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Proč mají islámské stavby jen geometrické vzory?", a: ["Protože Korán zakazuje zobrazovat lidské postavy."], id: 13, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Jak se nazývá štíhlá věž u mešity?", a: ["Minaret."], id: 14, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
-            { q: "Které město je nejposvátnější pro muslimy?", a: ["Mekka (s chrámem Ka'ba)."], id: 15, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false }
+            { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."], id: 2, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false }
         ],
         "Slované a Sámova říše": [
-            { q: "Kdy přišli Slované na naše území?", a: ["V 5. až 6. století.", "V rámci tzv. druhé vlny stěhování národů."], id: 401, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Kde byla původní pravlast Slovanů?", a: ["Ve východní Evropě.", "Mezi řekami Vislou a Dněprem (severně od Karpat)."], id: 402, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Do kterých tří směrů se Slované vydali z pravlasti?", a: ["Na jih (Balkán), na západ (střední Evropa) a na východ."], id: 403, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Jak se nazýval typický slovanský dům?", a: ["Polozemnice.", "Částečně zahloubená chata s dřevěnou konstrukcí a střechou."], id: 404, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "V čem spočívalo dvojpolní hospodářství?", a: ["Pole bylo rozděleno na dvě části.", "Jedna polovina se osela (jaro) a druhá odpočívala (úhor)."], id: 405, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "V co věřili staří Slované před přijetím křesťanství?", a: ["Byli pohané.", "Uctívali přírodní síly a různé bohy (např. Perun nebo Svantovít)."], id: 406, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Kdo byl Sámo?", a: ["Francký kupec.", "Slované si ho zvolili za svého vůdce po vítězství nad Avary."], id: 407, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Proč vznikla Sámova říše?", a: ["Jako kmenový svaz pro společnou obranu.", "Sloužila k ochraně proti nájezdům Avarů a útokům Franků."], id: 408, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Ve kterém století existovala Sámova říše?", a: ["V 7. století (přibližně první polovina)."], id: 409, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Jak se jmenovala vítězná bitva Slovanů proti Frankům roku 631?", a: ["Bitva u Wogastisburgu."], id: 410, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Kterého franského krále Sámo porazil v bitvě u Wogastisburgu?", a: ["Dagoberta I."], id: 411, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Který jediný písemný pramen nás informuje o Sámově říši?", a: ["Fredegarova kronika."], id: 412, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Co se stalo s říší po Sámově smrti?", a: ["Kmenový svaz se rozpadl.", "Sámova říše jako celek zanikla."], id: 413, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Které řemeslné předměty se dochovaly díky archeologickým vykopávkám?", a: ["Šperky (např. náušnice), ostruhy, zbraně a zemědělské nástroje."], id: 414, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false },
-            { q: "Vyjmenuj alespoň tři první slovanské státy, které vznikaly po stěhování národů.", a: ["Bulharsko, Velká Morava, Český stát, Polsko nebo Kyjevská Rus."], id: 415, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false }
+            { q: "Kdy přišli Slované na naše území?", a: ["V 5. až 6. století."], id: 401, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false }
         ]
     };
 
@@ -315,22 +266,96 @@
         await dbOpen();
         if (navigator.storage && navigator.storage.persist) await navigator.storage.persist();
         document.getElementById('app-version').innerText = "Verze aplikace: " + APP_VERSION_DISPLAY;
+        
+        // 1. ZKONTROLOVAT URL PRO IMPORT
+        await checkUrlForImport();
+
+        // 2. NAČÍST DATA
         const saved = await dbLoad();
         if (saved) { decks = saved; } else { decks = INITIAL_CONTENT; await dbSave(decks); }
         renderMenu();
     }
 
-    // --- GAMIFIKACE LOGIKA ---
+    // --- MAGICKÝ IMPORT Z URL ---
+    async function checkUrlForImport() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const deckFile = urlParams.get('balicek'); // hledá ?balicek=nazev.json
+
+        if (deckFile) {
+            document.getElementById('loader').style.display = 'flex'; // Ukázat loader
+            try {
+                const response = await fetch(deckFile);
+                if (!response.ok) throw new Error("Soubor nenalezen");
+                const newData = await response.json();
+                
+                // Načteme existující data, abychom je mohli sloučit
+                const currentData = (await dbLoad()) || INITIAL_CONTENT;
+                
+                // Sloučení (Smart Merge Logic)
+                const mergedData = smartMerge(currentData, newData);
+                
+                // Uložit
+                await dbSave(mergedData);
+                
+                // Vyčistit URL (aby se to nenačítalo při refresh)
+                window.history.replaceState({}, document.title, window.location.pathname);
+                
+                alert(`Balíček "${deckFile}" byl úspěšně nahrán!`);
+            } catch (e) {
+                alert("Chyba při stahování balíčku: " + e.message);
+            } finally {
+                document.getElementById('loader').style.display = 'none';
+            }
+        }
+    }
+
+    // Pomocná funkce pro sloučení dat (použita i při ručním importu)
+    function smartMerge(oldDecks, newDecksImport) {
+        let incomingData = {};
+        if (Array.isArray(newDecksImport)) {
+            // Pokud je to starý formát (pole), musíme hádat název nebo použít generický
+            incomingData["Nový balíček"] = newDecksImport; 
+        } else {
+            incomingData = newDecksImport;
+        }
+
+        for (const [deckName, cards] of Object.entries(incomingData)) {
+            if (!oldDecks[deckName]) { oldDecks[deckName] = []; }
+            cards.forEach(importedCard => {
+                const existingCardIndex = oldDecks[deckName].findIndex(c => c.id === importedCard.id);
+                if (existingCardIndex !== -1) {
+                    const oldCard = oldDecks[deckName][existingCardIndex];
+                    // Aktualizovat obsah, zachovat progres
+                    oldDecks[deckName][existingCardIndex] = { 
+                        ...importedCard, 
+                        reps: oldCard.reps || 0, 
+                        interval: oldCard.interval || 0, 
+                        ef: oldCard.ef || 2.5, 
+                        nextReview: oldCard.nextReview || Date.now() 
+                    };
+                } else {
+                    oldDecks[deckName].push({ 
+                        ...importedCard, 
+                        reps: 0, 
+                        interval: 0, 
+                        ef: 2.5, 
+                        nextReview: Date.now() 
+                    });
+                }
+            });
+        }
+        return oldDecks;
+    }
+
+    // --- ZBYTEK APLIKACE ---
     function updateStats(wasReview) {
         let stats = JSON.parse(localStorage.getItem('history_user_stats')) || { streak: 0, lastDate: "", totalReps: 0 };
         const today = new Date().toISOString().split('T')[0];
-
         if (wasReview) {
             stats.totalReps = (stats.totalReps || 0) + 1;
             if (stats.lastDate !== today) {
                 const yesterday = new Date(Date.now() - 86400000).toISOString().split('T')[0];
-                if (stats.lastDate === yesterday) { stats.streak++; } 
-                else { stats.streak = 1; }
+                if (stats.lastDate === yesterday) { stats.streak++; } else { stats.streak = 1; }
                 stats.lastDate = today;
             }
         }
@@ -342,47 +367,28 @@
         const stats = updateStats(false);
         document.getElementById('stat-streak').innerText = stats.streak;
         document.getElementById('stat-xp').innerText = stats.totalReps;
-
-        let countNew = 0, countLearn = 0, countMaster = 0;
+        let cN = 0, cL = 0, cM = 0;
         Object.values(decks).forEach(cards => {
-            cards.forEach(c => {
-                if (c.archived) return;
-                if (c.reps === 0) countNew++;
-                else if (c.interval >= 14) countMaster++;
-                else countLearn++;
-            });
+            cards.forEach(c => { if (c.archived) return; if (c.reps === 0) cN++; else if (c.interval >= 14) cM++; else cL++; });
         });
-        const total = countNew + countLearn + countMaster;
-        
-        if (total > 0) {
-            document.getElementById('bb-master').style.width = (countMaster / total * 100) + "%";
-            document.getElementById('bb-learn').style.width = (countLearn / total * 100) + "%";
-            document.getElementById('bb-new').style.width = (countNew / total * 100) + "%";
-            document.getElementById('stat-mastered').innerText = Math.round(countMaster / total * 100) + "%";
+        const t = cN + cL + cM;
+        if (t > 0) {
+            document.getElementById('bb-master').style.width = (cM/t*100) + "%";
+            document.getElementById('bb-learn').style.width = (cL/t*100) + "%";
+            document.getElementById('bb-new').style.width = (cN/t*100) + "%";
+            document.getElementById('stat-mastered').innerText = Math.round(cM/t*100) + "%";
         }
     }
 
     function renderMenu() {
         renderStats();
-
         const list = document.getElementById('deck-list'), arch = document.getElementById('archived-list');
         list.innerHTML = ""; arch.innerHTML = ""; let hasArch = false;
-        
-        if(Object.keys(decks).length === 0) {
-            list.innerHTML = "<div style='text-align:center; padding:20px; color:#666;'>Zatím tu nic není.<br>Nahrajte balíček nebo vytvořte nový!</div>";
-        }
-
+        if(Object.keys(decks).length === 0) list.innerHTML = "<div style='text-align:center; padding:20px; color:#666;'>Žádná témata.</div>";
         Object.keys(decks).forEach(n => {
             const isA = decks[n][0]?.archived;
             const due = decks[n].filter(c => c.nextReview <= Date.now()).length;
-            const h = `<div class="deck-option">
-                <input type="checkbox" value="${n}" ${isA?'':'checked'}>
-                <div class="deck-info" onclick="openEditor('${n}')">
-                    <span class="deck-name">${n} <span class="edit-icon">✏️</span></span>
-                    <span style="font-size:0.75rem; color:#666;">Karet: ${decks[n].length} | Opakování: ${due}</span>
-                </div>
-                <button onclick="toggleArchive('${n}')" style="background:none; border:none; cursor:pointer; font-size:1.4rem; margin-left:10px;">${isA?'📤':'📥'}</button>
-                </div>`;
+            const h = `<div class="deck-option"><input type="checkbox" value="${n}" ${isA?'':'checked'}><div class="deck-info" onclick="openEditor('${n}')"><span class="deck-name">${n} <span class="edit-icon">✏️</span></span><span style="font-size:0.75rem; color:#666;">Karet: ${decks[n].length} | Opakování: ${due}</span></div><button onclick="toggleArchive('${n}')" style="background:none; border:none; cursor:pointer; font-size:1.4rem; margin-left:10px;">${isA?'📤':'📥'}</button></div>`;
             if(isA){ arch.innerHTML += h; hasArch = true; } else list.innerHTML += h;
         });
         document.getElementById('archived-section').classList.toggle('hidden', !hasArch);
@@ -393,29 +399,21 @@
     function startSession() {
         const sel = Array.from(document.querySelectorAll('#deck-list input:checked')).map(i => i.value);
         if(!sel.length) return; 
-        
-        let allCards = []; sel.forEach(n => allCards = allCards.concat(decks[n]));
-        let dueCards = allCards.filter(c => c.nextReview <= Date.now());
-        dueCards.sort((a,b) => a.nextReview - b.nextReview);
-        sessionCards = dueCards.slice(0, sessionLimit);
-        
+        let all = []; sel.forEach(n => all = all.concat(decks[n]));
+        let due = all.filter(c => c.nextReview <= Date.now());
+        due.sort((a,b) => a.nextReview - b.nextReview);
+        sessionCards = due.slice(0, sessionLimit);
         if(sessionCards.length > 1) sessionCards.sort(() => Math.random() - 0.5);
-
         if(!sessionCards.length) { alert("Dnes nemáš co opakovat!"); return; }
-        
-        sessionIdx = 0; 
-        document.body.classList.add('learning-active');
-        document.getElementById('ui-menu').classList.add('hidden'); 
-        document.getElementById('ui-learning').classList.remove('hidden');
+        sessionIdx = 0; document.body.classList.add('learning-active');
+        document.getElementById('ui-menu').classList.add('hidden'); document.getElementById('ui-learning').classList.remove('hidden');
         renderCard();
     }
 
     function closeLearning() { 
         document.body.classList.remove('learning-active');
-        document.getElementById('ui-learning').classList.add('hidden'); 
-        document.getElementById('ui-done').classList.add('hidden');
-        document.getElementById('ui-menu').classList.remove('hidden');
-        location.reload(); 
+        document.getElementById('ui-learning').classList.add('hidden'); document.getElementById('ui-done').classList.add('hidden');
+        document.getElementById('ui-menu').classList.remove('hidden'); location.reload(); 
     }
 
     function renderCard() {
@@ -452,30 +450,14 @@
 
     function handleSRS(q) {
         if(transitioning) return; let c = sessionCards[sessionIdx];
-        
         updateStats(true);
-
         c.reps = c.reps || 0; c.interval = c.interval || 0; c.ef = c.ef || 2.5;
-
-        if(q < 3){ 
-            c.reps = 0; c.interval = 0; c.nextReview = Date.now();
-            sessionCards.push(c); 
-        }
+        if(q < 3){ c.reps = 0; c.interval = 0; c.nextReview = Date.now(); sessionCards.push(c); }
         else {
-            if(c.reps === 0) {
-                if(q === 3) c.interval = 0.007; 
-                else if(q === 4) c.interval = 1; 
-                else c.interval = 4; 
-            }
-            else {
-                if(c.interval < 0.01) c.interval = 1; 
-                else c.interval = Math.round(c.interval * c.ef);
-            }
-            c.reps++; 
-            c.ef = Math.max(1.3, c.ef + (0.1 - (5-q)*(0.08 + (5-q)*0.02))); 
-            c.nextReview = Date.now() + (c.interval * 86400000);
+            if(c.reps === 0) { if(q === 3) c.interval = 0.007; else if(q === 4) c.interval = 1; else c.interval = 4; }
+            else { if(c.interval < 0.01) c.interval = 1; else c.interval = Math.round(c.interval * c.ef); }
+            c.reps++; c.ef = Math.max(1.3, c.ef + (0.1 - (5-q)*(0.08 + (5-q)*0.02))); c.nextReview = Date.now() + (c.interval * 86400000);
         }
-        
         const idx = decks[c.deck].findIndex(i => i.id === c.id); decks[c.deck][idx] = c; dbSave(decks); 
         sessionIdx++; renderCard();
     }
@@ -491,16 +473,9 @@
         const getNextText = (quality) => {
             let nextI = 0;
             if (quality < 3) return "<1m";
-            if (reps === 0) { 
-                if(quality === 3) nextI = 0.007; 
-                else if(quality === 4) nextI = 1; 
-                else nextI = 4; 
-            } else {
-                if(interval < 0.01) nextI = 1;
-                else nextI = interval * (Math.max(1.3, ef + (0.1 - (5-quality)*(0.08 + (5-quality)*0.02))));
-            }
-            if (nextI < 1) { let mins = Math.round(nextI * 24 * 60); return mins + "m"; } 
-            else { return Math.round(nextI) + "d"; }
+            if (reps === 0) { if(quality === 3) nextI = 0.007; else if(quality === 4) nextI = 1; else nextI = 4; } 
+            else { if(interval < 0.01) nextI = 1; else nextI = interval * (Math.max(1.3, ef + (0.1 - (5-quality)*(0.08 + (5-quality)*0.02)))); }
+            if (nextI < 1) { let mins = Math.round(nextI * 24 * 60); return mins + "m"; } else { return Math.round(nextI) + "d"; }
         };
         document.getElementById('l-again').innerText = "<1m";
         document.getElementById('l-hard').innerText = getNextText(3);
@@ -508,7 +483,7 @@
         document.getElementById('l-easy').innerText = getNextText(5);
     }
 
-    // --- EDITOR LOGIC ---
+    // --- EDITOR ---
     let activeDeck = "", currentQImg = "", currentAImg = "";
     window.openEditor = function(n) { activeDeck = n; switchView('ui-editor'); document.getElementById('editor-title').innerText = "Upravit: " + n; document.getElementById('in-deck-name').value = n; confirmName(); };
     function openCreator() { activeDeck = ""; switchView('ui-editor'); document.getElementById('editor-title').innerText = "Nové téma"; document.getElementById('in-deck-name').value = ""; document.getElementById('in-deck-name').disabled = false; document.getElementById('card-form').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden'); }
@@ -523,42 +498,29 @@
     function delCard(id) { if(confirm("Smazat?")){ decks[activeDeck] = decks[activeDeck].filter(i=>i.id!=id); dbSave(decks); renderEditorList(); } }
     function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(decks)])); a.download="historie_srs.json"; a.click(); }
     
-    // --- SMART UPDATE (Chytrý import) ---
-    async function importData(e) { 
-        const r = new FileReader(); 
-        r.onload = async (v) => { 
-            try { 
-                const importedData = JSON.parse(v.target.result); 
-                let newDecksData = {};
-                if (Array.isArray(importedData)) { const name = prompt("Název nového tématu?"); if (!name) return; newDecksData[name] = importedData; } else { newDecksData = importedData; }
-
-                for (const [deckName, cards] of Object.entries(newDecksData)) {
-                    if (!decks[deckName]) { decks[deckName] = []; }
-                    cards.forEach(importedCard => {
-                        const existingCardIndex = decks[deckName].findIndex(c => c.id === importedCard.id);
-                        if (existingCardIndex !== -1) {
-                            const oldCard = decks[deckName][existingCardIndex];
-                            // Aktualizace obsahu (text/obrázky), ale zachování SRS metrik
-                            decks[deckName][existingCardIndex] = { ...importedCard, reps: oldCard.reps || 0, interval: oldCard.interval || 0, ef: oldCard.ef || 2.5, nextReview: oldCard.nextReview || Date.now() };
-                        } else {
-                            decks[deckName].push({ ...importedCard, reps: 0, interval: 0, ef: 2.5, nextReview: Date.now() });
-                        }
-                    });
-                }
-                await dbSave(decks); alert("Data úspěšně aktualizována!"); location.reload(); 
-            } catch (err) { alert("Chyba při nahrávání."); console.error(err); } 
-        }; 
-        r.readAsText(e.target.files[0]); 
+    // --- MANUÁLNÍ IMPORT ---
+    function importData(e) {
+        const r = new FileReader();
+        r.onload = async (v) => {
+            try {
+                const importedData = JSON.parse(v.target.result);
+                // Použijeme stejnou logiku jako pro magický import
+                const currentData = (await dbLoad()) || INITIAL_CONTENT;
+                const mergedData = smartMerge(currentData, importedData);
+                await dbSave(mergedData);
+                alert("Data aktualizována!"); location.reload();
+            } catch (err) { alert("Chyba při nahrávání."); console.error(err); }
+        };
+        r.readAsText(e.target.files[0]);
     }
 
-    // --- RESET OCHRANA ---
     function fullReset() { 
         const check = prompt("POZOR: Toto smaže celý tvůj postup i statistiky!\n\nPokud to opravdu chceš udělat, napiš: SMAZAT");
         if (check && check.trim().toUpperCase() === "SMAZAT") {
             indexedDB.deleteDatabase(DB_NAME); 
             localStorage.removeItem('history_user_stats');
             setTimeout(() => location.reload(), 500); 
-        } else { alert("Chybné potvrzení. Ke smazání nedošlo."); }
+        } else { alert("Chybné potvrzení."); }
     }
 
     if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js').then(reg => { reg.addEventListener('updatefound', () => { const newWorker = reg.installing; newWorker.addEventListener('statechange', () => { if (newWorker.state === 'installed' && navigator.serviceWorker.controller) { if(confirm("Je k dispozici nová verze aplikace. Aktualizovat nyní?")) { window.location.reload(); } } }); }); }); }
