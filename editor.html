@@ -2,99 +2,67 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Učitelský Editor - Dějepis SRS v1.5</title>
+    <title>Učitelský Editor - Dějepis SRS v1.6</title>
     <style>
+        /* (STYLY STEJNÉ JAKO PŘEDTÍM - ZKRÁCENO PRO PŘEHLEDNOST) */
         :root { --primary: #1a3a5a; --accent: #e67e22; --bg: #f4f7f6; --text: #2c3e50; --danger: #e74c3c; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; }
-        
-        /* HEADER */
         header { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #ddd; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
         h1 { margin: 0; font-size: 1.2rem; color: var(--primary); display: flex; align-items: center; gap: 10px; }
-        
         .top-btn-group { display: flex; gap: 10px; }
         button { cursor: pointer; padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; }
         .btn-main { background: var(--primary); color: white; } .btn-main:hover { background: #132c45; }
         .btn-sec { background: white; border: 1px solid #ccc; color: #555; } .btn-sec:hover { background: #f0f0f0; }
         .btn-danger { background: #fff; border: 1px solid var(--danger); color: var(--danger); } .btn-danger:hover { background: var(--danger); color: white; }
         .btn-ai { background: #e6f4ea; border: 1px solid #ceead6; color: #1e8e3e; } .btn-ai:hover { background: #dceid5; }
-        /* NEW BUTTON */
         .btn-qr { background: #fff8e1; border: 1px solid #ffe082; color: #f57f17; } .btn-qr:hover { background: #ffecb3; }
-
-        /* LAYOUT */
         .workspace { display: flex; flex: 1; overflow: hidden; }
-        
-        /* SIDEBAR */
         .sidebar { width: 250px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
         .deck-list { flex: 1; overflow-y: auto; padding: 10px; }
         .deck-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 6px; display: flex; justify-content: space-between; }
         .deck-item:hover { background: #f0f5f9; }
         .deck-item.active { background: var(--primary); color: white; }
         .sidebar-footer { padding: 15px; border-top: 1px solid #eee; display:flex; flex-direction:column; gap:10px; }
-
-        /* MAIN CONTENT */
         .main-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
-        
         .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; flex-wrap: wrap; gap: 10px;}
-        
         .search-box { flex-grow: 1; margin: 0 20px; position: relative; }
         .search-box input { width: 100%; padding: 10px 10px 10px 35px; border-radius: 20px; border: 1px solid #ccc; outline: none; }
         .search-box::before { content: "🔍"; position: absolute; left: 10px; top: 10px; opacity: 0.5; }
-
-        /* TABLE */
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #f8f9fa; font-weight: 600; color: #666; font-size: 0.9rem; }
         tr:hover { background: #fdfdfd; }
-        
         .col-id { width: 40px; color: #999; font-size: 0.8rem; }
         .col-img { width: 50px; text-align: center; }
-        
         .thumb { width: 35px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; background: #eee; cursor: zoom-in; transition: transform 0.1s; }
         .thumb:hover { transform: scale(1.1); border-color: var(--primary); }
-        
         .col-actions { width: 180px; text-align: right; white-space: nowrap; }
         .action-btn { background: none; border: none; font-size: 1.1rem; padding: 5px; opacity: 0.6; cursor: pointer; transition: 0.2s; }
         .action-btn:hover { opacity: 1; transform: scale(1.2); }
-
-        /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; }
         .modal { background: white; width: 600px; max-width: 90%; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-header { padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between; }
         .modal-body { padding: 20px; overflow-y: auto; }
         .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; text-align: right; background: #f8f9fa; }
-
         .form-group { margin-bottom: 15px; }
         label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 5px; color: #555; }
         input[type="text"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px; font-family: inherit; box-sizing: border-box; }
         textarea { resize: vertical; min-height: 80px; }
-
         .ai-box { background: #f4f7f6; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 15px; color: #333; }
         .link-box { background: #e3f2fd; padding: 10px; border: 1px solid #90caf9; color: #1565c0; font-family: monospace; word-break: break-all; margin-top:10px; cursor: pointer; }
-
-        .img-drop-zone { 
-            border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 6px; 
-            margin-top: 5px; cursor: pointer; transition: 0.2s; background: #fafafa;
-            display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 40px;
-        }
+        .img-drop-zone { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 6px; margin-top: 5px; cursor: pointer; transition: 0.2s; background: #fafafa; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 40px; }
         .img-drop-zone:hover { border-color: var(--primary); background: #eef4f9; }
         .preview-large { max-height: 100px; max-width: 100%; display: block; margin: 0 auto; }
-        
         .hidden { display: none; }
         .status-missing { color: #ccc; font-size: 0.8rem; cursor: default; }
-
-        /* LIGHTBOX */
-        .lightbox-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.9); z-index: 2000; display: none; 
-            justify-content: center; align-items: center; cursor: zoom-out;
-        }
+        .lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; cursor: zoom-out; }
         .lightbox-img { max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🎓 Učitelský Editor <span style="font-size:0.8rem; opacity:0.6; font-weight:normal;">v1.5</span></h1>
+    <h1>🎓 Učitelský Editor <span style="font-size:0.8rem; opacity:0.6; font-weight:normal;">v1.6</span></h1>
     <div class="top-btn-group">
         <button class="btn-qr" onclick="openQrModal()" title="Vytvořit odkaz pro žáky">🔗 Generovat odkaz</button>
         <button class="btn-ai" onclick="openAiModal()" title="Generovat otázky pomocí AI">🤖 AI Prompt</button>
@@ -146,6 +114,12 @@
                     <button class="btn-danger hidden" id="del-a" style="padding:2px 6px; font-size:0.7rem;">X</button>
                 </div>
             </div>
+            <div class="form-group">
+                <label style="display:flex; align-items:center; cursor:pointer;">
+                    <input type="checkbox" id="edit-expert" style="width:20px; height:20px; margin-right:10px;">
+                    🎓 Rozšiřující učivo (Expert)
+                </label>
+            </div>
         </div>
         <div class="modal-footer">
             <button class="btn-sec" onclick="closeModal('modal-overlay')">Zrušit</button>
@@ -192,7 +166,8 @@ Výstup musí být pouze čistý JSON kód v následujícím formátu:
 
 1. Odpověď ("a") musí být vždy pole řetězců (list).
 2. Přidej prázdná pole "qImg" a "aImg".
-3. Nepoužívej markdown.
+3. Pro těžké otázky nastav "expert": true, jinak false.
+4. Nepoužívej markdown.
 
 Šablona:
 {
@@ -201,7 +176,8 @@ Výstup musí být pouze čistý JSON kód v následujícím formátu:
       "q": "Otázka?",
       "a": ["Odpověď 1"],
       "qImg": "",
-      "aImg": ""
+      "aImg": "",
+      "expert": false
     }
   ]
 }</div>
@@ -282,12 +258,11 @@ Výstup musí být pouze čistý JSON kód v následujícím formátu:
             if (searchTerm && !card.q.toLowerCase().includes(searchTerm.toLowerCase())) return;
             const aText = Array.isArray(card.a) ? card.a.join(", ") : card.a;
             
-            // LUPA NA OBRÁZKY
             const qThumb = card.qImg ? `<img src="${card.qImg}" class="thumb" onclick="showLightbox('${card.qImg}')" title="Klikni pro zvětšení">` : '<span class="status-missing">-</span>';
             const aThumb = card.aImg ? `<img src="${card.aImg}" class="thumb" onclick="showLightbox('${card.aImg}')" title="Klikni pro zvětšení">` : '<span class="status-missing">-</span>';
-            
-            // TOOLTIPY U TLAČÍTEK
-            html += `<tr><td class="col-id">${index+1}</td><td class="col-img">${qThumb}</td><td>${card.q}</td><td><div style="max-height:50px; overflow:hidden;">${aText}</div></td><td class="col-img">${aThumb}</td>
+            const expertIcon = card.expert ? '🎓 ' : ''; // ZNAK EXPERTA
+
+            html += `<tr><td class="col-id">${index+1}</td><td class="col-img">${qThumb}</td><td>${expertIcon}${card.q}</td><td><div style="max-height:50px; overflow:hidden;">${aText}</div></td><td class="col-img">${aThumb}</td>
             <td class="col-actions">
                 <button class="action-btn" onclick="moveCard(${index}, -1)" title="Posunout nahoru">⬆️</button>
                 <button class="action-btn" onclick="moveCard(${index}, 1)" title="Posunout dolů">⬇️</button>
@@ -333,17 +308,11 @@ Výstup musí být pouze čistý JSON kód v následujícím formátu:
     function generateQr() {
         const filename = document.getElementById('qr-filename').value.trim();
         if(!filename) { alert("Zadejte název souboru!"); return; }
-        
-        // BASE URL - Zde nastavujeme napevno adresu aplikace
         const baseUrl = "https://tondam77-faith.github.io/historie/";
         const fullUrl = `${baseUrl}?balicek=${filename}`;
-        
         document.getElementById('qr-link-text').innerText = fullUrl;
-        
-        // Použití free API pro QR kód (goqr.me)
         const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullUrl)}`;
         document.getElementById('qr-image').src = qrUrl;
-        
         document.getElementById('qr-result').classList.remove('hidden');
     }
     function copyLink() {
@@ -353,13 +322,15 @@ Výstup musí být pouze čistý JSON kód v následujícím formátu:
 
     function openModal(index = null) {
         const modal = document.getElementById('modal-overlay');
-        document.getElementById('edit-q').value = ""; document.getElementById('edit-a').value = ""; tempImgQ = ""; tempImgA = ""; updatePreview('q'); updatePreview('a');
+        document.getElementById('edit-q').value = ""; document.getElementById('edit-a').value = ""; document.getElementById('edit-expert').checked = false;
+        tempImgQ = ""; tempImgA = ""; updatePreview('q'); updatePreview('a');
         if (index !== null) {
             editingCardId = index;
             document.getElementById('modal-title').innerText = "Upravit kartu";
             const c = decks[currentDeck][index];
             document.getElementById('edit-q').value = c.q;
             document.getElementById('edit-a').value = Array.isArray(c.a) ? c.a.join('\n') : c.a;
+            document.getElementById('edit-expert').checked = c.expert || false; // NAČÍST EXPERT
             tempImgQ = c.qImg || ""; tempImgA = c.aImg || "";
             updatePreview('q'); updatePreview('a');
         } else { editingCardId = null; document.getElementById('modal-title').innerText = "Nová karta"; }
@@ -373,9 +344,10 @@ Výstup musí být pouze čistý JSON kód v následujícím formátu:
     function saveCard() {
         const q = document.getElementById('edit-q').value.trim();
         const aVal = document.getElementById('edit-a').value.trim();
+        const isExpert = document.getElementById('edit-expert').checked; // ULOŽIT EXPERT
         if (!q || !aVal) { alert("Vyplňte vše."); return; }
         const aArr = aVal.split('\n').filter(line => line.trim() !== "");
-        const newCardData = { id: Date.now() + Math.random(), deck: currentDeck, q: q, a: aArr, qImg: tempImgQ, aImg: tempImgA, reps: 0, interval: 0, ef: 2.5, nextReview: Date.now() };
+        const newCardData = { id: Date.now() + Math.random(), deck: currentDeck, q: q, a: aArr, qImg: tempImgQ, aImg: tempImgA, expert: isExpert, reps: 0, interval: 0, ef: 2.5, nextReview: Date.now() };
         if (editingCardId !== null) {
             const old = decks[currentDeck][editingCardId];
             newCardData.id = old.id; newCardData.reps = old.reps; newCardData.interval = old.interval; newCardData.ef = old.ef; newCardData.nextReview = old.nextReview;
