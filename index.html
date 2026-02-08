@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="theme-color" content="#fdfbf7">
-    <title>Dějepis - Smart SRS v1.7</title>
+    <title>Dějepis - Smart SRS v1.8</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -93,15 +93,15 @@
         .controls-wrapper { width: 100%; margin-top: 5px; flex-shrink: 0; }
         #ui-btns-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
         
-        /* TLAČÍTKA S ANIMACÍ (Jemná past) */
+        /* TLAČÍTKA S ANIMACÍ */
         .srs-btn { 
             border: none; padding: 12px 2px; border-radius: 12px; color: white; font-weight: bold; 
             cursor: pointer; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; 
-            transition: all 0.5s ease; /* Plynulý přechod barev */
+            transition: all 0.5s ease; 
         }
         .srs-btn:disabled { 
             opacity: 0.4; 
-            background-color: #bdc3c7 !important; /* Šedá barva */
+            background-color: #bdc3c7 !important; 
             color: #7f8c8d;
             cursor: wait; 
             transform: scale(0.95); 
@@ -149,8 +149,8 @@
         
         <div class="mode-switch-container">
             <div class="mode-switch">
-                <div id="mode-basic" class="mode-opt active" onclick="setMode('basic')">👶 Základ</div>
-                <div id="mode-expert" class="mode-opt" onclick="setMode('expert')">🎓 Expert</div>
+                <div id="mode-basic" class="mode-opt" onclick="setMode('basic')">👶 Základ</div>
+                <div id="mode-expert" class="mode-opt active" onclick="setMode('expert')">🎓 Expert</div>
             </div>
         </div>
 
@@ -199,7 +199,7 @@
                 <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
             </div>
             <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
-            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.7 (Smart Pacing)</div>
+            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.8 + Expert Default</div>
         </div>
     </div>
 
@@ -251,9 +251,10 @@
 
 <script>
     let db;
-    const APP_VERSION_DISPLAY = "v1.7"; 
+    const APP_VERSION_DISPLAY = "v1.8"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
-    let userMode = localStorage.getItem('history_mode') || 'basic';
+    // ZMĚNA: Default je nyní 'expert'
+    let userMode = localStorage.getItem('history_mode') || 'expert';
 
     async function dbOpen() { return new Promise((resolve) => { const req = indexedDB.open(DB_NAME, DB_VERSION); req.onupgradeneeded = (e) => e.target.result.createObjectStore("state"); req.onsuccess = (e) => { db = e.target.result; resolve(); }; }); }
     async function dbSave(data) { const tx = db.transaction("state", "readwrite"); tx.objectStore("state").put(data, "currentDecks"); }
@@ -419,7 +420,7 @@
         transitioning = true; document.getElementById('card-el').classList.add('flipped');
         window.speechSynthesis.cancel();
         
-        // --- VIZUÁLNÍ COOLDOWN (ŠEDÁ TLAČÍTKA) ---
+        // --- VIZUÁLNÍ COOLDOWN ---
         const buttons = document.querySelectorAll('.srs-btn');
         buttons.forEach(b => b.disabled = true);
 
@@ -432,7 +433,7 @@
             document.getElementById('ui-btns-container').classList.remove('hidden'); 
             document.getElementById('flip-hint').classList.add('hidden'); transitioning = false;
             
-            // --- ODBLOKOVÁNÍ TLAČÍTEK PO 0.8s ---
+            // --- ODBLOKOVÁNÍ ---
             setTimeout(() => { buttons.forEach(b => b.disabled = false); }, 800);
 
         }, 600);
