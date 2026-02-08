@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="theme-color" content="#fdfbf7">
-    <title>Dějepis - Smart SRS v1.2</title>
+    <title>Dějepis - Smart SRS v1.5</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -44,7 +44,7 @@
         .stat-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
         .stat-val { font-size: 1.4rem; font-weight: 800; color: var(--primary); }
         .stat-label { font-size: 0.7rem; text-transform: uppercase; color: #7f8c8d; font-weight: bold; margin-top: 4px; letter-spacing: 0.5px; }
-        .stat-streak-color { color: var(--accent); }
+        .stat-streak-color { color: var(--accent); } /* Oranžový oheň */
 
         .brain-bar-container { width: 100%; }
         .brain-bar { height: 10px; background: #eee; border-radius: 5px; display: flex; overflow: hidden; width: 100%; }
@@ -75,6 +75,20 @@
         .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; justify-content: center; padding: 25px; border-radius: 24px; box-shadow: 0 10px 30px rgba(26, 58, 90, 0.15); overflow-y: auto; border: 1px solid #f0f0f0; background: var(--card-front); color: var(--primary); }
         .card-back { background: var(--primary); color: #ffffff; transform: rotateY(180deg); align-items: flex-start; text-align: left; }
         .card-img { max-width: 100%; max-height: 180px; border-radius: 8px; margin: 5px auto 15px; display: block; object-fit: contain; }
+        
+        /* AUDIO TLAČÍTKO */
+        .btn-audio {
+            position: absolute; top: 15px; right: 15px;
+            background: rgba(0,0,0,0.05); color: inherit;
+            border: none; border-radius: 50%; width: 35px; height: 35px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; font-size: 1.2rem; transition: 0.2s;
+            z-index: 10;
+        }
+        .card-back .btn-audio { background: rgba(255,255,255,0.2); color: white; }
+        .btn-audio:hover { transform: scale(1.1); }
+        .btn-audio:active { transform: scale(0.9); }
+
         .q-text { font-size: 1.5rem; font-weight: bold; line-height: 1.35; text-align: center; width: 100%; }
         .a-list { margin: 0; padding-left: 20px; font-size: 1.2rem; list-style: none; width: 100%; }
         .a-list li { margin-bottom: 10px; position: relative; padding-left: 15px; }
@@ -87,13 +101,12 @@
         .srs-btn span { font-size: 0.7rem; font-weight: normal; margin-top: 3px; opacity: 0.9; }
         .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--success); }
 
+        /* Tlačítka a Utility */
         .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 1.1rem; margin-top: 10px; cursor: pointer; }
         .btn-alt { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        
-        /* Tlačítka pro správu dat - širší */
         .btn-utility { background: var(--gray); color: white; border: none; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight:bold; }
         
-        /* Editor + Footer */
+        /* Editor & Footer */
         .card-creator-box { background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; margin-bottom: 15px; }
         .input-label { font-size: 0.75rem; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-top: 15px; display: block; }
         input[type="text"], textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ccc; font-family: inherit; font-size: 1rem; }
@@ -144,7 +157,7 @@
                     <div id="bb-new" class="bb-part bb-new" style="width:100%"></div>
                 </div>
                 <div class="brain-legend">
-                    <span><span style="color:var(--success)">●</span> Umím (14d+)</span>
+                    <span><span style="color:var(--success)">●</span> Umím</span>
                     <span><span style="color:var(--accent)">●</span> Trénuji</span>
                     <span><span style="color:#999">●</span> Nové</span>
                 </div>
@@ -187,7 +200,7 @@
                 <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
             </div>
             <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
-            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.2</div>
+            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.5 + Audio</div>
         </div>
     </div>
 
@@ -246,7 +259,7 @@
 
 <script>
     let db;
-    const APP_VERSION_DISPLAY = "v1.2"; 
+    const APP_VERSION_DISPLAY = "v1.5"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
 
     async function dbOpen() { return new Promise((resolve) => { const req = indexedDB.open(DB_NAME, DB_VERSION); req.onupgradeneeded = (e) => e.target.result.createObjectStore("state"); req.onsuccess = (e) => { db = e.target.result; resolve(); }; }); }
@@ -255,7 +268,7 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- INITIAL CONTENT (KOMPLETNÍ) ---
+    // --- INITIAL CONTENT (Obsah - verze 1.0) ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false },
@@ -305,6 +318,30 @@
         const saved = await dbLoad();
         if (saved) { decks = saved; } else { decks = INITIAL_CONTENT; await dbSave(decks); }
         renderMenu();
+    }
+
+    // --- AUDIO TTS LOGIC (NOVÉ) ---
+    function playAudio(e, type) {
+        e.stopPropagation(); // Zabránit otočení karty
+        const c = sessionCards[sessionIdx];
+        let textToRead = "";
+        
+        if (type === 'q') {
+            textToRead = c.q;
+        } else {
+            // Pokud je odpověď pole, spojíme ho, jinak přečteme string
+            textToRead = Array.isArray(c.a) ? c.a.join(". ") : c.a;
+        }
+
+        if ('speechSynthesis' in window) {
+            window.speechSynthesis.cancel(); // Zastavit předchozí
+            const utter = new SpeechSynthesisUtterance(textToRead);
+            utter.lang = 'cs-CZ'; // Čeština
+            utter.rate = 0.9; // Trochu pomaleji pro lepší srozumitelnost
+            window.speechSynthesis.speak(utter);
+        } else {
+            alert("Tvůj prohlížeč nepodporuje čtení textu.");
+        }
     }
 
     // --- MAGICKÝ IMPORT Z URL ---
@@ -461,7 +498,11 @@
         document.getElementById('progress-text').innerText = `Karta ${sessionIdx + 1} z ${sessionCards.length}`;
         document.getElementById('progress-fill').style.width = `${(sessionIdx / sessionCards.length)*100}%`;
         let qImgHtml = c.qImg ? `<img src="${c.qImg}" class="card-img">` : "";
-        document.getElementById('f-content').innerHTML = `<div style="font-size:0.7rem; color:var(--accent); margin-bottom:5px; font-weight:bold;">${c.deck.toUpperCase()}</div>${qImgHtml}<div class="q-text">${c.q}</div>`;
+        
+        // PŘIDÁNO TLAČÍTKO AUDIO
+        let audioBtn = `<button class="btn-audio" onclick="playAudio(event, 'q')">🔊</button>`;
+        
+        document.getElementById('f-content').innerHTML = `<div style="font-size:0.7rem; color:var(--accent); margin-bottom:5px; font-weight:bold;">${c.deck.toUpperCase()}</div>${audioBtn}${qImgHtml}<div class="q-text">${c.q}</div>`;
         document.getElementById('b-content').innerHTML = ""; 
         document.getElementById('card-el').classList.remove('flipped'); transitioning = false;
     }
@@ -469,11 +510,19 @@
     function handleFlip() {
         if(document.getElementById('card-el').classList.contains('flipped') || transitioning) return;
         transitioning = true; document.getElementById('card-el').classList.add('flipped');
+        
+        // Zastavit audio, pokud se čte otázka
+        window.speechSynthesis.cancel();
+
         setTimeout(() => {
             const c = sessionCards[sessionIdx];
             let aImgHtml = c.aImg ? `<img src="${c.aImg}" class="card-img">` : "";
+            
+            // PŘIDÁNO TLAČÍTKO AUDIO PRO ODPOVĚĎ
+            let audioBtn = `<button class="btn-audio" onclick="playAudio(event, 'a')">🔊</button>`;
+            
             let textHtml = c.a.length > 1 ? `<ul class="a-list">${c.a.map(i=>`<li>${i}</li>`).join('')}</ul>` : `<div class="a-single">${c.a[0]}</div>`;
-            document.getElementById('b-content').innerHTML = textHtml + aImgHtml;
+            document.getElementById('b-content').innerHTML = audioBtn + textHtml + aImgHtml;
             document.getElementById('ui-btns-container').classList.remove('hidden'); 
             document.getElementById('flip-hint').classList.add('hidden'); transitioning = false;
         }, 600);
@@ -481,6 +530,10 @@
 
     function handleSRS(q) {
         if(transitioning) return; let c = sessionCards[sessionIdx];
+        
+        // Zastavit audio při přechodu
+        window.speechSynthesis.cancel();
+
         updateStats(true);
         c.reps = c.reps || 0; c.interval = c.interval || 0; c.ef = c.ef || 2.5;
         if(q < 3){ c.reps = 0; c.interval = 0; c.nextReview = Date.now(); sessionCards.push(c); }

@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Učitelský Editor - Dějepis SRS</title>
+    <title>Učitelský Editor - Dějepis SRS v1.5</title>
     <style>
         :root { --primary: #1a3a5a; --accent: #e67e22; --bg: #f4f7f6; --text: #2c3e50; --danger: #e74c3c; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; }
@@ -17,6 +17,8 @@
         .btn-sec { background: white; border: 1px solid #ccc; color: #555; } .btn-sec:hover { background: #f0f0f0; }
         .btn-danger { background: #fff; border: 1px solid var(--danger); color: var(--danger); } .btn-danger:hover { background: var(--danger); color: white; }
         .btn-ai { background: #e6f4ea; border: 1px solid #ceead6; color: #1e8e3e; } .btn-ai:hover { background: #dceid5; }
+        /* NEW BUTTON */
+        .btn-qr { background: #fff8e1; border: 1px solid #ffe082; color: #f57f17; } .btn-qr:hover { background: #ffecb3; }
 
         /* LAYOUT */
         .workspace { display: flex; flex: 1; overflow: hidden; }
@@ -47,12 +49,10 @@
         .col-id { width: 40px; color: #999; font-size: 0.8rem; }
         .col-img { width: 50px; text-align: center; }
         
-        /* Náhled obrázku v tabulce - kurzor lupa */
         .thumb { width: 35px; height: 35px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; background: #eee; cursor: zoom-in; transition: transform 0.1s; }
         .thumb:hover { transform: scale(1.1); border-color: var(--primary); }
         
         .col-actions { width: 180px; text-align: right; white-space: nowrap; }
-        
         .action-btn { background: none; border: none; font-size: 1.1rem; padding: 5px; opacity: 0.6; cursor: pointer; transition: 0.2s; }
         .action-btn:hover { opacity: 1; transform: scale(1.2); }
 
@@ -69,6 +69,7 @@
         textarea { resize: vertical; min-height: 80px; }
 
         .ai-box { background: #f4f7f6; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 15px; color: #333; }
+        .link-box { background: #e3f2fd; padding: 10px; border: 1px solid #90caf9; color: #1565c0; font-family: monospace; word-break: break-all; margin-top:10px; cursor: pointer; }
 
         .img-drop-zone { 
             border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 6px; 
@@ -81,7 +82,7 @@
         .hidden { display: none; }
         .status-missing { color: #ccc; font-size: 0.8rem; cursor: default; }
 
-        /* LIGHTBOX (Zvětšení obrázku) */
+        /* LIGHTBOX */
         .lightbox-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
             background: rgba(0,0,0,0.9); z-index: 2000; display: none; 
@@ -93,8 +94,9 @@
 <body>
 
 <header>
-    <h1>🎓 Učitelský Editor <span style="font-size:0.8rem; opacity:0.6; font-weight:normal;">v1.4</span></h1>
+    <h1>🎓 Učitelský Editor <span style="font-size:0.8rem; opacity:0.6; font-weight:normal;">v1.5</span></h1>
     <div class="top-btn-group">
+        <button class="btn-qr" onclick="openQrModal()" title="Vytvořit odkaz pro žáky">🔗 Generovat odkaz</button>
         <button class="btn-ai" onclick="openAiModal()" title="Generovat otázky pomocí AI">🤖 AI Prompt</button>
         <button class="btn-sec" onclick="document.getElementById('file-in').click()" title="Nahrát soubor z počítače">📂 Nahrát JSON</button>
         <button class="btn-main" onclick="exportData()" title="Stáhnout soubor pro žáky">💾 Uložit JSON</button>
@@ -148,6 +150,31 @@
         <div class="modal-footer">
             <button class="btn-sec" onclick="closeModal('modal-overlay')">Zrušit</button>
             <button class="btn-main" onclick="saveCard()">Uložit kartu</button>
+        </div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="qr-modal">
+    <div class="modal" style="width:500px;">
+        <div class="modal-header">
+            <span>🔗 Generátor odkazu</span>
+            <button onclick="closeModal('qr-modal')" style="background:none; border:none; font-size:1.2rem;">✖</button>
+        </div>
+        <div class="modal-body">
+            <p>Zadejte přesný název souboru, který jste nahráli na GitHub:</p>
+            <input type="text" id="qr-filename" placeholder="např. velka_morava.json" style="width:100%">
+            
+            <div id="qr-result" class="hidden" style="margin-top:20px; text-align:center;">
+                <label>Odkaz pro žáky:</label>
+                <div class="link-box" id="qr-link-text" onclick="copyLink()" title="Klikni pro zkopírování"></div>
+                <div style="margin-top:15px;">
+                    <img id="qr-image" style="max-width:200px; border:1px solid #ccc;">
+                </div>
+                <p style="font-size:0.8rem; color:#666;">Tento QR kód si můžete stáhnout (pravé tlačítko) a promítnout ve třídě.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-main" onclick="generateQr()">Generovat</button>
         </div>
     </div>
 </div>
@@ -299,6 +326,29 @@ Výstup musí být pouze čistý JSON kód v následujícím formátu:
     }
     function closeLightbox() {
         document.getElementById('lightbox').style.display = 'none';
+    }
+
+    // QR LOGIC
+    function openQrModal() { document.getElementById('qr-modal').style.display = 'flex'; document.getElementById('qr-result').classList.add('hidden'); }
+    function generateQr() {
+        const filename = document.getElementById('qr-filename').value.trim();
+        if(!filename) { alert("Zadejte název souboru!"); return; }
+        
+        // BASE URL - Zde nastavujeme napevno adresu aplikace
+        const baseUrl = "https://tondam77-faith.github.io/historie/";
+        const fullUrl = `${baseUrl}?balicek=${filename}`;
+        
+        document.getElementById('qr-link-text').innerText = fullUrl;
+        
+        // Použití free API pro QR kód (goqr.me)
+        const qrUrl = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(fullUrl)}`;
+        document.getElementById('qr-image').src = qrUrl;
+        
+        document.getElementById('qr-result').classList.remove('hidden');
+    }
+    function copyLink() {
+        const text = document.getElementById('qr-link-text').innerText;
+        navigator.clipboard.writeText(text).then(() => alert("Odkaz zkopírován!"));
     }
 
     function openModal(index = null) {
