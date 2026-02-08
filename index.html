@@ -92,18 +92,23 @@
 
         .controls-wrapper { width: 100%; margin-top: 5px; flex-shrink: 0; }
         #ui-btns-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
-        .srs-btn { border: none; padding: 12px 2px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; transition: 0.3s; }
+        
+        /* TLAČÍTKA S ANIMACÍ (Jemná past) */
+        .srs-btn { 
+            border: none; padding: 12px 2px; border-radius: 12px; color: white; font-weight: bold; 
+            cursor: pointer; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; 
+            transition: all 0.5s ease; /* Plynulý přechod barev */
+        }
+        .srs-btn:disabled { 
+            opacity: 0.4; 
+            background-color: #bdc3c7 !important; /* Šedá barva */
+            color: #7f8c8d;
+            cursor: wait; 
+            transform: scale(0.95); 
+        }
+        
         .srs-btn span { font-size: 0.7rem; font-weight: normal; margin-top: 3px; opacity: 0.9; }
-        
-        /* RYCHLOSTNÍ PAST (DISABLED STAV) */
-        .srs-btn:disabled { opacity: 0.3; filter: grayscale(1); cursor: not-allowed; transform: scale(0.95); }
-        
         .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--success); }
-
-        /* TOAST NOTIFIKACE */
-        #toast { visibility: hidden; min-width: 250px; background-color: #333; color: #fff; text-align: center; border-radius: 8px; padding: 12px; position: fixed; z-index: 1000; left: 50%; bottom: 30px; transform: translateX(-50%); font-size: 0.9rem; font-weight: bold; box-shadow: 0 5px 15px rgba(0,0,0,0.3); opacity: 0; transition: opacity 0.3s, bottom 0.3s; }
-        #toast.show { visibility: visible; opacity: 1; bottom: 50px; }
-        #toast.warning { background-color: var(--danger); }
 
         /* Ostatní */
         .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 1.1rem; margin-top: 10px; cursor: pointer; }
@@ -136,7 +141,6 @@
 <body>
 
 <div id="loader"><div class="spinner"></div><p style="margin-top:15px; font-weight:bold; color:var(--primary);">Stahuji balíček...</p></div>
-<div id="toast"></div>
 
 <div class="container">
     <div id="ui-menu">
@@ -195,7 +199,7 @@
                 <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
             </div>
             <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
-            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.7 + SpeedTrap</div>
+            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.7 (Smart Pacing)</div>
         </div>
     </div>
 
@@ -250,7 +254,6 @@
     const APP_VERSION_DISPLAY = "v1.7"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
     let userMode = localStorage.getItem('history_mode') || 'basic';
-    let cardStartTime = 0; // PRO RYCHLOSTNÍ PAST
 
     async function dbOpen() { return new Promise((resolve) => { const req = indexedDB.open(DB_NAME, DB_VERSION); req.onupgradeneeded = (e) => e.target.result.createObjectStore("state"); req.onsuccess = (e) => { db = e.target.result; resolve(); }; }); }
     async function dbSave(data) { const tx = db.transaction("state", "readwrite"); tx.objectStore("state").put(data, "currentDecks"); }
@@ -258,7 +261,6 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- INITIAL CONTENT ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
@@ -278,14 +280,6 @@
         const saved = await dbLoad();
         if (saved) { decks = saved; } else { decks = INITIAL_CONTENT; await dbSave(decks); }
         renderMenu();
-    }
-
-    // --- TOAST NOTIFICATION ---
-    function showToast(message, isWarning = false) {
-        const t = document.getElementById("toast");
-        t.innerText = message;
-        t.className = isWarning ? "show warning" : "show";
-        setTimeout(() => { t.className = t.className.replace("show", ""); }, 3000);
     }
 
     // --- MODE ---
@@ -333,6 +327,7 @@
         return oldDecks;
     }
 
+    // --- LOGIKA ---
     function updateStats(wasReview) {
         let stats = JSON.parse(localStorage.getItem('history_user_stats')) || { streak: 0, lastDate: "", totalReps: 0 };
         const today = new Date().toISOString().split('T')[0];
@@ -404,9 +399,6 @@
             document.getElementById('ui-done').classList.remove('hidden'); return; 
         }
         
-        // RESET TIMER
-        cardStartTime = Date.now();
-
         const c = sessionCards[sessionIdx]; updateLabels(c);
         document.getElementById('ui-btns-container').classList.add('hidden');
         document.getElementById('flip-hint').classList.remove('hidden');
@@ -424,17 +416,10 @@
 
     function handleFlip() {
         if(document.getElementById('card-el').classList.contains('flipped') || transitioning) return;
-        
-        // SPEED TRAP CHECK
-        const timeSpent = Date.now() - cardStartTime;
-        if (timeSpent < 1500) {
-            showToast("⚡ Moc rychlé! Zpomal.", true);
-        }
-
         transitioning = true; document.getElementById('card-el').classList.add('flipped');
         window.speechSynthesis.cancel();
         
-        // DISABLE BUTTONS INITIALLY
+        // --- VIZUÁLNÍ COOLDOWN (ŠEDÁ TLAČÍTKA) ---
         const buttons = document.querySelectorAll('.srs-btn');
         buttons.forEach(b => b.disabled = true);
 
@@ -447,10 +432,8 @@
             document.getElementById('ui-btns-container').classList.remove('hidden'); 
             document.getElementById('flip-hint').classList.add('hidden'); transitioning = false;
             
-            // RE-ENABLE BUTTONS AFTER DELAY (ANTI-SPAM)
-            setTimeout(() => {
-                buttons.forEach(b => b.disabled = false);
-            }, 800); // Tlačítka se zapnou 0.8s po otočení
+            // --- ODBLOKOVÁNÍ TLAČÍTEK PO 0.8s ---
+            setTimeout(() => { buttons.forEach(b => b.disabled = false); }, 800);
 
         }, 600);
     }
