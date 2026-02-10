@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="theme-color" content="#fdfbf7">
-    <title>Dějepis - Smart SRS v1.9.1</title>
+    <title>Dějepis - Smart SRS v1.9.2</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -45,7 +45,8 @@
         .deck-option input { width: 24px; height: 24px; margin-right: 15px; flex-shrink: 0; cursor: pointer; }
         .deck-info { flex-grow: 1; cursor: pointer; padding: 5px 0; }
         .deck-name { font-weight: bold; font-size: 1.05rem; display: flex; align-items: center; gap: 8px; line-height: 1.2; }
-        
+        .edit-icon { font-size: 1rem; opacity: 0.5; }
+
         /* LEARNING */
         #ui-learning { display: flex; flex-direction: column; height: 100%; padding: 15px; overflow-y: auto; }
         .stats-bar { display: flex; justify-content: space-around; font-weight: bold; margin-bottom: 10px; font-size: 0.9rem; color: var(--primary); }
@@ -78,11 +79,23 @@
         .srs-btn span { font-size: 0.7rem; font-weight: normal; margin-top: 3px; opacity: 0.9; }
         .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--success); }
 
+        /* EDITOR UI */
+        .card-creator-box { background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; margin-bottom: 15px; }
+        .input-label { font-size: 0.75rem; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-top: 15px; display: block; }
+        input[type="text"], textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ccc; font-family: inherit; font-size: 1rem; }
+        .list-item-edit { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #eee; background: white; }
+        .list-item-text { flex: 1; padding-right: 10px; font-size: 0.9rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .list-item-actions { display: flex; gap: 15px; flex-shrink: 0; }
+        .icon-btn { cursor: pointer; font-size: 1.1rem; }
+        .img-preview-box { display: flex; align-items: center; gap: 10px; margin-top: 5px; margin-bottom: 10px; }
+        .preview-thumb { height: 40px; border-radius: 4px; border: 1px solid #ccc; display: none; }
+
         /* BUTTONS & UTILS */
         .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 1.1rem; margin-top: 10px; cursor: pointer; }
         .btn-alt { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-utility { background: var(--gray); color: white; border: none; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight:bold; }
         .btn-reset { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 6px; font-size: 0.75rem; display: block; margin: 10px auto; cursor: pointer; }
+        .btn-small-del { background: var(--danger); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer; margin-left: 5px; }
         .app-footer { margin-top: auto; padding: 30px 0 10px; text-align: center; }
         .help-box { background: white; padding: 20px; border-radius: 15px; border: 1px solid #ddd; text-align: left; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         
@@ -128,6 +141,7 @@
             <h4 style="margin:0 0 10px 0;">Aktivní témata:</h4>
             <div id="deck-list">Načítám...</div>
             <button class="btn-main" onclick="startSession()">Spustit dnešní cíl 🚀</button>
+            <button class="btn-alt" style="margin-top:10px;" onclick="openCreator()">➕ Nové téma</button>
         </div>
 
         <div class="admin-panel" style="background:#eee; margin-bottom: 20px; padding:15px; border-radius:15px;">
@@ -152,7 +166,7 @@
                 <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
             </div>
             <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
-            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.9.1 (Edge Fix)</div>
+            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.9.2 (Final Fix)</div>
         </div>
     </div>
 
@@ -170,11 +184,49 @@
             <div id="flip-hint" style="font-size: 0.85rem; color: var(--gray); text-align:center; margin-top:10px;">Klikni na kartu pro zobrazení odpovědi.</div>
         </div>
     </div>
+
+    <div id="ui-editor" class="hidden">
+        <h3 id="editor-title" style="margin-top:0;">Editor tématu</h3>
+        <span class="input-label" style="margin-top:0">Název balíčku</span>
+        <input type="text" id="in-deck-name" placeholder="např. Byzantská říše">
+        <div id="card-form" class="hidden">
+            <div class="card-creator-box">
+                <h4 style="margin-top:0; color:var(--accent);">Nová karta</h4>
+                <input type="hidden" id="in-card-id">
+                <span class="input-label">Otázka</span>
+                <input type="text" id="in-card-q" placeholder="Zadej otázku...">
+                <div class="img-preview-box">
+                    <label class="btn-utility" style="font-size:0.7rem; padding:5px 10px;">📷 Foto<input type="file" hidden accept="image/*" onchange="previewImg(event, 'q')"></label>
+                    <img id="prev-q" class="preview-thumb">
+                    <button id="del-q" class="btn-small-del" onclick="removeImg('q')">X</button>
+                </div>
+                
+                <span class="input-label">Odpověď</span>
+                <textarea id="in-card-a" rows="3" placeholder="Zadej odpověď..."></textarea>
+                <div class="img-preview-box">
+                    <label class="btn-utility" style="font-size:0.7rem; padding:5px 10px;">📷 Foto<input type="file" hidden accept="image/*" onchange="previewImg(event, 'a')"></label>
+                    <img id="prev-a" class="preview-thumb">
+                    <button id="del-a" class="btn-small-del" onclick="removeImg('a')">X</button>
+                </div>
+
+                <label style="display:flex; align-items:center; margin-top:15px; font-weight:bold; font-size:0.9rem;">
+                    <input type="checkbox" id="in-card-expert" style="width:20px; height:20px; margin-right:10px;">
+                    🎓 Rozšiřující učivo (Expert)
+                </label>
+                
+                <button class="btn-main" onclick="saveCard()">Uložit kartu</button>
+            </div>
+            <h4 style="margin:10px 0;">Seznam karet:</h4>
+            <div id="editor-card-list"></div>
+        </div>
+        <button class="btn-main" id="btn-next" onclick="confirmName()">Další: Spravovat karty</button>
+        <button class="btn-utility" style="width:100%; margin-top:15px; justify-content:center;" onclick="location.reload()">Zpět do menu</button>
+    </div>
 </div>
 
 <script>
     let db;
-    const APP_VERSION_DISPLAY = "v1.9.1"; 
+    const APP_VERSION_DISPLAY = "v1.9.2"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
     let userMode = localStorage.getItem('history_mode') || 'expert';
 
@@ -184,7 +236,7 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- INITIAL CONTENT (Pokud je DB prázdná) ---
+    // --- INITIAL CONTENT ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
@@ -214,7 +266,7 @@
         if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utter = new SpeechSynthesisUtterance(textToRead); utter.lang = 'cs-CZ'; utter.rate = 0.9; window.speechSynthesis.speak(utter); } else { alert("Audio nedostupné."); }
     }
 
-    // --- IMPORT (OPRAVENO PRO EDGE) ---
+    // --- IMPORT (EDGE FIX) ---
     async function checkUrlForImport() {
         const urlParams = new URLSearchParams(window.location.search);
         const deckFile = urlParams.get('balicek');
@@ -222,41 +274,30 @@
             document.getElementById('loader').style.display = 'flex';
             try {
                 const response = await fetch(deckFile);
-                if (!response.ok) throw new Error("Soubor nenalezen (HTTP " + response.status + ")");
+                if (!response.ok) throw new Error("Soubor nenalezen");
                 const newData = await response.json();
                 const currentData = (await dbLoad()) || INITIAL_CONTENT;
                 const mergedData = smartMerge(currentData, newData);
                 await dbSave(mergedData);
                 window.history.replaceState({}, document.title, window.location.pathname);
                 alert(`Balíček "${deckFile}" byl úspěšně nahrán!`);
-            } catch (e) { 
-                alert("Chyba při stahování: " + e.message + "\n\n(Poznámka: QR kód funguje pouze pokud je aplikace na internetu, ne na disku.)"); 
-            } finally { document.getElementById('loader').style.display = 'none'; }
+            } catch (e) { alert("Chyba při stahování: " + e.message); } finally { document.getElementById('loader').style.display = 'none'; }
         }
     }
 
     function importData(e) {
-        const file = e.target.files[0]; 
-        if (!file) return;
+        const file = e.target.files[0]; if (!file) return;
         const reader = new FileReader();
         reader.onload = async (v) => {
             try {
                 let jsonStr = v.target.result.trim();
-                // FIX PRO EDGE A WINDOWS: Odstranění BOM (neviditelný znak na začátku)
-                if (jsonStr.charCodeAt(0) === 0xFEFF) { 
-                    jsonStr = jsonStr.slice(1); 
-                }
-                
+                if (jsonStr.charCodeAt(0) === 0xFEFF) jsonStr = jsonStr.slice(1); // BOM Fix
                 const importedData = JSON.parse(jsonStr);
                 const currentData = (await dbLoad()) || INITIAL_CONTENT;
                 const mergedData = smartMerge(currentData, importedData);
                 await dbSave(mergedData);
-                alert("✅ Data úspěšně nahrána!"); 
-                location.reload();
-            } catch (err) { 
-                alert("❌ Chyba souboru!\n\nProhlížeč nedokázal přečíst tento JSON.\nDetaily: " + err.message); 
-                console.error(err); 
-            }
+                alert("✅ Data nahrána!"); location.reload();
+            } catch (err) { alert("❌ Chyba souboru: " + err.message); }
         };
         reader.readAsText(file);
     }
@@ -276,7 +317,7 @@
         return oldDecks;
     }
 
-    // --- LOGIKA APLIKACE ---
+    // --- LOGIKA ---
     function updateStats(wasReview) {
         let stats = JSON.parse(localStorage.getItem('history_user_stats')) || { streak: 0, lastDate: "", totalReps: 0 };
         const today = new Date().toISOString().split('T')[0];
@@ -310,7 +351,7 @@
         Object.keys(decks).forEach(n => {
             const isA = decks[n][0]?.archived;
             const due = decks[n].filter(c => c.nextReview <= Date.now()).length;
-            const h = `<div class="deck-option"><input type="checkbox" value="${n}" ${isA?'':'checked'}><div class="deck-info"><span class="deck-name">${n}</span><span style="font-size:0.75rem; color:#666;">Karet: ${decks[n].length} | Opakování: ${due}</span></div><button onclick="toggleArchive('${n}')" style="background:none; border:none; cursor:pointer; font-size:1.4rem; margin-left:10px;">${isA?'📤':'📥'}</button></div>`;
+            const h = `<div class="deck-option"><input type="checkbox" value="${n}" ${isA?'':'checked'}><div class="deck-info" onclick="openEditor('${n}')"><span class="deck-name">${n} <span class="edit-icon">✏️</span></span><span style="font-size:0.75rem; color:#666;">Karet: ${decks[n].length} | Opakování: ${due}</span></div><button onclick="toggleArchive('${n}')" style="background:none; border:none; cursor:pointer; font-size:1.4rem; margin-left:10px;">${isA?'📤':'📥'}</button></div>`;
             if(isA){ arch.innerHTML += h; hasArch = true; } else list.innerHTML += h;
         });
         document.getElementById('archived-section').classList.toggle('hidden', !hasArch);
@@ -360,7 +401,6 @@
         transitioning = true; document.getElementById('card-el').classList.add('flipped');
         window.speechSynthesis.cancel();
         
-        // --- VIZUÁLNÍ COOLDOWN ---
         const buttons = document.querySelectorAll('.srs-btn');
         buttons.forEach(b => b.disabled = true);
 
@@ -373,7 +413,6 @@
             document.getElementById('ui-btns-container').classList.remove('hidden'); 
             document.getElementById('flip-hint').classList.add('hidden'); transitioning = false;
             
-            // --- ODBLOKOVÁNÍ ---
             setTimeout(() => { buttons.forEach(b => b.disabled = false); }, 800);
         }, 600);
     }
@@ -408,6 +447,64 @@
         document.getElementById('l-easy').innerText = getNextText(5);
     }
 
+    // --- EDITOR (MOBILE) ---
+    let activeDeck = "", currentQImg = "", currentAImg = "";
+    window.openEditor = function(n) { activeDeck = n; switchView('ui-editor'); document.getElementById('editor-title').innerText = "Upravit: " + n; document.getElementById('in-deck-name').value = n; confirmName(); };
+    function openCreator() { activeDeck = ""; switchView('ui-editor'); document.getElementById('editor-title').innerText = "Nové téma"; document.getElementById('in-deck-name').value = ""; document.getElementById('in-deck-name').disabled = false; document.getElementById('card-form').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden'); }
+    function switchView(id) { ['ui-menu', 'ui-learning', 'ui-editor', 'ui-done'].forEach(v => document.getElementById(v).classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+    function confirmName() { const n = document.getElementById('in-deck-name').value.trim(); if(!n) return; if(!decks[n]) decks[n] = []; activeDeck = n; document.getElementById('in-deck-name').disabled = true; document.getElementById('btn-next').classList.add('hidden'); document.getElementById('card-form').classList.remove('hidden'); renderEditorList(); }
+    function previewImg(e, type) { const reader = new FileReader(); reader.onload = () => { if(type === 'q') { currentQImg = reader.result; document.getElementById('prev-q').src = currentQImg; document.getElementById('prev-q').style.display = "block"; document.getElementById('del-q').style.display = "inline"; } if(type === 'a') { currentAImg = reader.result; document.getElementById('prev-a').src = currentAImg; document.getElementById('prev-a').style.display = "block"; document.getElementById('del-a').style.display = "inline"; } }; reader.readAsDataURL(e.target.files[0]); }
+    function removeImg(type) { if(type === 'q') { currentQImg = ""; document.getElementById('prev-q').style.display = "none"; document.getElementById('del-q').style.display = "none"; document.querySelector('input[onchange*="previewImg(event, \'q\')"]').value = ""; } if(type === 'a') { currentAImg = ""; document.getElementById('prev-a').style.display = "none"; document.getElementById('del-a').style.display = "none"; document.querySelector('input[onchange*="previewImg(event, \'a\')"]').value = ""; } }
+    
+    // OPRAVENÁ FUNKCE UKLÁDÁNÍ
+    function saveCard() { 
+        const q = document.getElementById('in-card-q').value.trim();
+        const aVal = document.getElementById('in-card-a').value.trim();
+        const id = document.getElementById('in-card-id').value;
+        const isExpert = document.getElementById('in-card-expert').checked; 
+        
+        if(!q || !aVal) return; 
+        
+        let newCard = { q, a: aVal.split('\n'), qImg: currentQImg, aImg: currentAImg, expert: isExpert, id: id ? parseInt(id) : Date.now(), deck: activeDeck, archived: false }; 
+        
+        if(id){ 
+            const i = decks[activeDeck].findIndex(c=>c.id==id); 
+            const old = decks[activeDeck][i];
+            newCard.nextReview = old.nextReview||Date.now(); newCard.ef = old.ef||2.5; newCard.reps = old.reps||0; newCard.interval = old.interval||0; 
+            decks[activeDeck][i] = newCard; 
+        } else { 
+            newCard.nextReview = Date.now(); newCard.ef = 2.5; newCard.reps = 0; newCard.interval = 0; 
+            decks[activeDeck].push(newCard); 
+        } 
+        dbSave(decks); clearForm(); renderEditorList(); 
+    }
+    
+    // OPRAVENÁ FUNKCE NAČÍTÁNÍ
+    function loadEdit(id) { 
+        const c = decks[activeDeck].find(i=>i.id==id); 
+        document.getElementById('in-card-q').value = c.q; 
+        document.getElementById('in-card-a').value = c.a.join('\n'); 
+        document.getElementById('in-card-id').value = c.id; 
+        document.getElementById('in-card-expert').checked = c.expert || false; 
+        
+        currentQImg = c.qImg || ""; if(currentQImg) { document.getElementById('prev-q').src = currentQImg; document.getElementById('prev-q').style.display="block"; document.getElementById('del-q').style.display="inline"; } else removeImg('q'); 
+        currentAImg = c.aImg || ""; if(currentAImg) { document.getElementById('prev-a').src = currentAImg; document.getElementById('prev-a').style.display="block"; document.getElementById('del-a').style.display="inline"; } else removeImg('a'); 
+    }
+    
+    function clearForm() { 
+        document.getElementById('in-card-q').value = ""; document.getElementById('in-card-a').value = ""; document.getElementById('in-card-id').value = ""; 
+        document.getElementById('in-card-expert').checked = false; 
+        removeImg('q'); removeImg('a'); 
+    }
+    
+    function renderEditorList() { 
+        document.getElementById('editor-card-list').innerHTML = decks[activeDeck].map(c => ` 
+        <div class="list-item-edit"> 
+            <div class="list-item-text">${c.expert?'🎓 ':''}${c.qImg?'📷 ':''}${c.q}</div> 
+            <div class="list-item-actions"> <span class="icon-btn" onclick="loadEdit(${c.id})">✏️</span> <span class="icon-btn" style="color:red;" onclick="delCard(${c.id})">🗑️</span> </div> 
+        </div>`).join(''); 
+    }
+    function delCard(id) { if(confirm("Smazat?")){ decks[activeDeck] = decks[activeDeck].filter(i=>i.id!=id); dbSave(decks); renderEditorList(); } }
     function exportData() { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([JSON.stringify(decks)])); a.download="historie_srs.json"; a.click(); }
     
     function fullReset() { 
