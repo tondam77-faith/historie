@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="theme-color" content="#fdfbf7">
-    <title>Dějepis - Smart SRS v1.9.2</title>
+    <title>Dějepis - Smart SRS v1.9.5</title>
     <style>
         :root {
             --primary: #1a3a5a; --accent: #e67e22; --bg: #fdfbf7;
@@ -74,12 +74,13 @@
         /* CONTROLS */
         .controls-wrapper { width: 100%; margin-top: 5px; flex-shrink: 0; }
         #ui-btns-container { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; width: 100%; }
+        /* Tlačítka s animací - jemná past */
         .srs-btn { border: none; padding: 12px 2px; border-radius: 12px; color: white; font-weight: bold; cursor: pointer; font-size: 0.9rem; display: flex; flex-direction: column; align-items: center; transition: all 0.5s ease; }
         .srs-btn:disabled { opacity: 0.4; background-color: #bdc3c7 !important; color: #7f8c8d; cursor: wait; transform: scale(0.95); }
         .srs-btn span { font-size: 0.7rem; font-weight: normal; margin-top: 3px; opacity: 0.9; }
         .b-0 { background: var(--danger); } .b-1 { background: var(--accent); } .b-2 { background: #3498db; } .b-3 { background: var(--success); }
 
-        /* EDITOR UI */
+        /* EDITOR UI & UTILS */
         .card-creator-box { background: white; padding: 15px; border-radius: 15px; border: 1px solid #ddd; margin-bottom: 15px; }
         .input-label { font-size: 0.75rem; font-weight: bold; color: var(--primary); text-transform: uppercase; margin-top: 15px; display: block; }
         input[type="text"], textarea { width: 100%; padding: 12px; margin-top: 5px; border-radius: 10px; border: 1px solid #ccc; font-family: inherit; font-size: 1rem; }
@@ -90,12 +91,12 @@
         .img-preview-box { display: flex; align-items: center; gap: 10px; margin-top: 5px; margin-bottom: 10px; }
         .preview-thumb { height: 40px; border-radius: 4px; border: 1px solid #ccc; display: none; }
 
-        /* BUTTONS & UTILS */
         .btn-main { background: var(--primary); color: white; border: none; padding: 15px; border-radius: 12px; width: 100%; font-weight: bold; font-size: 1.1rem; margin-top: 10px; cursor: pointer; }
         .btn-alt { background: var(--accent); color: white; border: none; padding: 10px 18px; border-radius: 8px; font-weight: bold; cursor: pointer; }
         .btn-utility { background: var(--gray); color: white; border: none; padding: 12px 15px; border-radius: 8px; font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; font-weight:bold; }
         .btn-reset { background: none; border: 1px solid var(--danger); color: var(--danger); padding: 8px 15px; border-radius: 6px; font-size: 0.75rem; display: block; margin: 10px auto; cursor: pointer; }
         .btn-small-del { background: var(--danger); color: white; border: none; border-radius: 4px; padding: 2px 6px; font-size: 0.7rem; cursor: pointer; margin-left: 5px; }
+        
         .app-footer { margin-top: auto; padding: 30px 0 10px; text-align: center; }
         .help-box { background: white; padding: 20px; border-radius: 15px; border: 1px solid #ddd; text-align: left; margin-bottom: 20px; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         
@@ -106,10 +107,9 @@
 </head>
 <body>
 
-<div id="loader"><div class="spinner"></div><p style="margin-top:15px; font-weight:bold; color:var(--primary);">Stahuji data...</p></div>
+<div id="loader"><div class="spinner"></div><p style="margin-top:15px; font-weight:bold; color:var(--primary);">Pracuji...</p></div>
 
 <div class="container">
-    
     <div id="ui-menu">
         <h2 style="margin-bottom: 5px; text-align:center;">Dějepis - Smart SRS</h2>
         <p style="margin: 0 0 15px 0; font-size: 0.9rem; opacity: 0.8; text-align:center;">Chytré opakování pro základní školu</p>
@@ -166,7 +166,7 @@
                 <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
             </div>
             <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
-            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.9.2 (Final Fix)</div>
+            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v1.9.5 (Stable v1.8 + Edge Fix)</div>
         </div>
     </div>
 
@@ -195,25 +195,11 @@
                 <input type="hidden" id="in-card-id">
                 <span class="input-label">Otázka</span>
                 <input type="text" id="in-card-q" placeholder="Zadej otázku...">
-                <div class="img-preview-box">
-                    <label class="btn-utility" style="font-size:0.7rem; padding:5px 10px;">📷 Foto<input type="file" hidden accept="image/*" onchange="previewImg(event, 'q')"></label>
-                    <img id="prev-q" class="preview-thumb">
-                    <button id="del-q" class="btn-small-del" onclick="removeImg('q')">X</button>
-                </div>
-                
+                <div class="img-preview-box"><label class="btn-utility" style="font-size:0.7rem; padding:5px 10px;">📷 Foto<input type="file" hidden accept="image/*" onchange="previewImg(event, 'q')"></label><img id="prev-q" class="preview-thumb"><button id="del-q" class="btn-small-del" onclick="removeImg('q')">X</button></div>
                 <span class="input-label">Odpověď</span>
                 <textarea id="in-card-a" rows="3" placeholder="Zadej odpověď..."></textarea>
-                <div class="img-preview-box">
-                    <label class="btn-utility" style="font-size:0.7rem; padding:5px 10px;">📷 Foto<input type="file" hidden accept="image/*" onchange="previewImg(event, 'a')"></label>
-                    <img id="prev-a" class="preview-thumb">
-                    <button id="del-a" class="btn-small-del" onclick="removeImg('a')">X</button>
-                </div>
-
-                <label style="display:flex; align-items:center; margin-top:15px; font-weight:bold; font-size:0.9rem;">
-                    <input type="checkbox" id="in-card-expert" style="width:20px; height:20px; margin-right:10px;">
-                    🎓 Rozšiřující učivo (Expert)
-                </label>
-                
+                <div class="img-preview-box"><label class="btn-utility" style="font-size:0.7rem; padding:5px 10px;">📷 Foto<input type="file" hidden accept="image/*" onchange="previewImg(event, 'a')"></label><img id="prev-a" class="preview-thumb"><button id="del-a" class="btn-small-del" onclick="removeImg('a')">X</button></div>
+                <label style="display:flex; align-items:center; margin-top:15px; font-weight:bold; font-size:0.9rem;"><input type="checkbox" id="in-card-expert" style="width:20px; height:20px; margin-right:10px;">🎓 Rozšiřující učivo (Expert)</label>
                 <button class="btn-main" onclick="saveCard()">Uložit kartu</button>
             </div>
             <h4 style="margin:10px 0;">Seznam karet:</h4>
@@ -226,7 +212,7 @@
 
 <script>
     let db;
-    const APP_VERSION_DISPLAY = "v1.9.2"; 
+    const APP_VERSION_DISPLAY = "v1.9.5"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
     let userMode = localStorage.getItem('history_mode') || 'expert';
 
@@ -236,11 +222,41 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- INITIAL CONTENT ---
+    // --- INITIAL CONTENT (KOMPLETNÍ DATA) ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
-            { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."], id: 2, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false }
+            { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."], id: 2, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Ve kterém století se zrodil islám?", a: ["V 7. století."], id: 3, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Kdo je podle islámu jediný Bůh a kdo je jeho prorok?", a: ["Bůh: Alláh", "Prorok: Muhammad (Mohamed)"], id: 4, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Jak se jmenuje posvátná kniha muslimů?", a: ["Korán."], id: 5, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Vyjmenuj 5 pilířů islámu.", a: ["Víra v jednoho Boha - Alláha", "Modlitba 5x denně", "Almužna chudým", "Půst v měsíci Ramadánu", "Pouť do Mekky jednou za život"], id: 6, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "Co je to chalífát?", a: ["Jednotná arabská říše v čele s chalífou."], id: 7, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Kam až sahala Arabská říše v době rozmachu?", a: ["Od Atlantiku přes severní Afriku až k Indii."], id: 8, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "Které evropské státy leží na Pyrenejském poloostrově?", a: ["Španělsko", "Portugalsko"], id: 9, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Kdo byl Ibrahim ibn Jákub?", a: ["Kupec, který v 10. stol. napsal první popis Prahy."], id: 10, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "V jakých vědách Arabové vynikali?", a: ["Matematika a fyzika", "Zeměpis", "Lékařství"], id: 11, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Jaké nové plodiny přinesli Arabové do Evropy?", a: ["Rýže", "Bavlna", "Citrony a pomeranče"], id: 12, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Proč mají islámské stavby jen geometrické vzory?", a: ["Protože Korán zakazuje zobrazovat lidské postavy."], id: 13, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "Jak se nazývá štíhlá věž u mešity?", a: ["Minaret."], id: 14, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Které město je nejposvátnější pro muslimy?", a: ["Mekka (s chrámem Ka'ba)."], id: 15, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false }
+        ],
+        "Slované a Sámova říše": [
+            { q: "Kdy přišli Slované na naše území?", a: ["V 5. až 6. století.", "V rámci tzv. druhé vlny stěhování národů."], id: 401, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Kde byla původní pravlast Slovanů?", a: ["Ve východní Evropě.", "Mezi řekami Vislou a Dněprem (severně od Karpat)."], id: 402, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Do kterých tří směrů se Slované vydali z pravlasti?", a: ["na západ (střední Evropa)", "na jih (Balkán)", "na východ (za řeku Dněpr)"], id: 403, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Jak se nazýval typický slovanský dům?", a: ["Polozemnice.", "Částečně zahloubená chata s dřevěnou konstrukcí a střechou."], id: 404, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "V čem spočívalo dvojpolní hospodářství?", a: ["Pole bylo rozděleno na dvě části:", "jedna polovina se osela (jař)", "druhá odpočívala (úhor)."], id: 405, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "V co věřili staří Slované před přijetím křesťanství?", a: ["Byli pohané.", "Uctívali přírodní síly", "a různé bohy (např. Perun nebo Radegast)."], id: 406, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Kdo byl Sámo?", a: ["Francký kupec.", "Slované si ho zvolili za svého vůdce po vítězství nad Avary."], id: 407, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Proč vznikla Sámova říše?", a: ["Jako kmenový svaz pro společnou obranu.", "Sloužila k ochraně proti nájezdům Avarů a útokům Franků."], id: 408, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Ve kterém století existovala Sámova říše?", a: ["V 7. století (přibližně první polovina)."], id: 409, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Jak se jmenovala vítězná bitva Slovanů proti Frankům roku 631?", a: ["Bitva u Wogastisburgu."], id: 410, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Kterého franského krále Sámo porazil v bitvě u Wogastisburgu?", a: ["Dagoberta I."], id: 411, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Který jediný písemný pramen nás informuje o Sámově říši?", a: ["Fredegarova kronika."], id: 412, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Co se stalo s říší po Sámově smrti?", a: ["Kmenový svaz se rozpadl.", "Sámova říše jako celek zanikla."], id: 413, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Které řemeslné předměty se dochovaly díky archeologickým vykopávkám?", a: ["Šperky (např. náušnice), ostruhy, zbraně a zemědělské nástroje."], id: 414, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Vyjmenuj alespoň tři první slovanské státy, které vznikaly po stěhování národů.", a: ["západ: Velká Morava, Český stát, Polsko", "jih: Bulharsko", "východ: Kyjevská Rus."], id: 415, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true }
         ]
     };
 
@@ -266,7 +282,7 @@
         if ('speechSynthesis' in window) { window.speechSynthesis.cancel(); const utter = new SpeechSynthesisUtterance(textToRead); utter.lang = 'cs-CZ'; utter.rate = 0.9; window.speechSynthesis.speak(utter); } else { alert("Audio nedostupné."); }
     }
 
-    // --- IMPORT (EDGE FIX) ---
+    // --- IMPORT (JEDINÁ ZMĚNA OPROTI v1.8 - FIX PRO EDGE) ---
     async function checkUrlForImport() {
         const urlParams = new URLSearchParams(window.location.search);
         const deckFile = urlParams.get('balicek');
@@ -275,7 +291,12 @@
             try {
                 const response = await fetch(deckFile);
                 if (!response.ok) throw new Error("Soubor nenalezen");
-                const newData = await response.json();
+                
+                let text = await response.text();
+                // TOTO JE TA OPRAVA PRO EDGE:
+                if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+                
+                const newData = JSON.parse(text);
                 const currentData = (await dbLoad()) || INITIAL_CONTENT;
                 const mergedData = smartMerge(currentData, newData);
                 await dbSave(mergedData);
@@ -286,20 +307,21 @@
     }
 
     function importData(e) {
-        const file = e.target.files[0]; if (!file) return;
-        const reader = new FileReader();
-        reader.onload = async (v) => {
+        const r = new FileReader();
+        r.onload = async (v) => {
             try {
-                let jsonStr = v.target.result.trim();
-                if (jsonStr.charCodeAt(0) === 0xFEFF) jsonStr = jsonStr.slice(1); // BOM Fix
-                const importedData = JSON.parse(jsonStr);
-                const currentData = (await dbLoad()) || INITIAL_CONTENT;
-                const mergedData = smartMerge(currentData, importedData);
-                await dbSave(mergedData);
-                alert("✅ Data nahrána!"); location.reload();
-            } catch (err) { alert("❌ Chyba souboru: " + err.message); }
+                let text = v.target.result;
+                // TOTO JE TA OPRAVA PRO EDGE:
+                if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+                
+                const newData = JSON.parse(text);
+                const current = (await dbLoad()) || INITIAL_CONTENT;
+                const merged = smartMerge(current, newData);
+                await dbSave(merged);
+                alert("Nahráno!"); location.reload();
+            } catch(err) { alert("Chyba importu: " + err.message); }
         };
-        reader.readAsText(file);
+        r.readAsText(e.target.files[0]);
     }
 
     function smartMerge(oldDecks, newDecksImport) {
@@ -447,7 +469,7 @@
         document.getElementById('l-easy').innerText = getNextText(5);
     }
 
-    // --- EDITOR (MOBILE) ---
+    // --- EDITOR (MOBILE) - VRÁCEN PŮVODNÍ KÓD z v1.8 ---
     let activeDeck = "", currentQImg = "", currentAImg = "";
     window.openEditor = function(n) { activeDeck = n; switchView('ui-editor'); document.getElementById('editor-title').innerText = "Upravit: " + n; document.getElementById('in-deck-name').value = n; confirmName(); };
     function openCreator() { activeDeck = ""; switchView('ui-editor'); document.getElementById('editor-title').innerText = "Nové téma"; document.getElementById('in-deck-name').value = ""; document.getElementById('in-deck-name').disabled = false; document.getElementById('card-form').classList.add('hidden'); document.getElementById('btn-next').classList.remove('hidden'); }
@@ -456,37 +478,23 @@
     function previewImg(e, type) { const reader = new FileReader(); reader.onload = () => { if(type === 'q') { currentQImg = reader.result; document.getElementById('prev-q').src = currentQImg; document.getElementById('prev-q').style.display = "block"; document.getElementById('del-q').style.display = "inline"; } if(type === 'a') { currentAImg = reader.result; document.getElementById('prev-a').src = currentAImg; document.getElementById('prev-a').style.display = "block"; document.getElementById('del-a').style.display = "inline"; } }; reader.readAsDataURL(e.target.files[0]); }
     function removeImg(type) { if(type === 'q') { currentQImg = ""; document.getElementById('prev-q').style.display = "none"; document.getElementById('del-q').style.display = "none"; document.querySelector('input[onchange*="previewImg(event, \'q\')"]').value = ""; } if(type === 'a') { currentAImg = ""; document.getElementById('prev-a').style.display = "none"; document.getElementById('del-a').style.display = "none"; document.querySelector('input[onchange*="previewImg(event, \'a\')"]').value = ""; } }
     
-    // OPRAVENÁ FUNKCE UKLÁDÁNÍ
     function saveCard() { 
         const q = document.getElementById('in-card-q').value.trim();
         const aVal = document.getElementById('in-card-a').value.trim();
         const id = document.getElementById('in-card-id').value;
         const isExpert = document.getElementById('in-card-expert').checked; 
-        
         if(!q || !aVal) return; 
-        
         let newCard = { q, a: aVal.split('\n'), qImg: currentQImg, aImg: currentAImg, expert: isExpert, id: id ? parseInt(id) : Date.now(), deck: activeDeck, archived: false }; 
-        
-        if(id){ 
-            const i = decks[activeDeck].findIndex(c=>c.id==id); 
-            const old = decks[activeDeck][i];
-            newCard.nextReview = old.nextReview||Date.now(); newCard.ef = old.ef||2.5; newCard.reps = old.reps||0; newCard.interval = old.interval||0; 
-            decks[activeDeck][i] = newCard; 
-        } else { 
-            newCard.nextReview = Date.now(); newCard.ef = 2.5; newCard.reps = 0; newCard.interval = 0; 
-            decks[activeDeck].push(newCard); 
-        } 
+        if(id){ const i = decks[activeDeck].findIndex(c=>c.id==id); const old = decks[activeDeck][i]; newCard.nextReview = old.nextReview||Date.now(); newCard.ef = old.ef||2.5; newCard.reps = old.reps||0; newCard.interval = old.interval||0; decks[activeDeck][i] = newCard; } else { newCard.nextReview = Date.now(); newCard.ef = 2.5; newCard.reps = 0; newCard.interval = 0; decks[activeDeck].push(newCard); } 
         dbSave(decks); clearForm(); renderEditorList(); 
     }
     
-    // OPRAVENÁ FUNKCE NAČÍTÁNÍ
     function loadEdit(id) { 
         const c = decks[activeDeck].find(i=>i.id==id); 
         document.getElementById('in-card-q').value = c.q; 
         document.getElementById('in-card-a').value = c.a.join('\n'); 
         document.getElementById('in-card-id').value = c.id; 
         document.getElementById('in-card-expert').checked = c.expert || false; 
-        
         currentQImg = c.qImg || ""; if(currentQImg) { document.getElementById('prev-q').src = currentQImg; document.getElementById('prev-q').style.display="block"; document.getElementById('del-q').style.display="inline"; } else removeImg('q'); 
         currentAImg = c.aImg || ""; if(currentAImg) { document.getElementById('prev-a').src = currentAImg; document.getElementById('prev-a').style.display="block"; document.getElementById('del-a').style.display="inline"; } else removeImg('a'); 
     }
