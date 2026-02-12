@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Editor Dějepis SRS v3.2</title>
+    <title>Učitelský Editor - Dějepis SRS v3.3</title>
     <style>
         :root { --primary: #1a3a5a; --accent: #e67e22; --bg: #f4f7f6; --text: #2c3e50; --danger: #e74c3c; --success: #27ae60; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; }
@@ -29,6 +29,7 @@
         .main-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
         .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
         
+        /* TABULKA */
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #f8f9fa; font-weight: 600; color: #666; font-size: 0.9rem; }
@@ -64,7 +65,7 @@
 <body>
 
 <header>
-    <h1>🎓 Editor v3.2 <span style="font-size:0.8rem; font-weight:normal; opacity:0.7;">(Auto-ID Fix)</span></h1>
+    <h1>🎓 Editor v3.3 <span style="font-size:0.8rem; font-weight:normal; opacity:0.7;">(All Features)</span></h1>
     <div class="top-btn-group">
         <button class="btn-qr" onclick="openQrModal()">🔗 Generovat odkaz</button>
         <button class="btn-ai" onclick="openAiModal()">🤖 AI Prompt</button>
@@ -156,12 +157,11 @@ Výstup musí být čistý JSON v tomto formátu:
     {
       "q": "Otázka?",
       "a": ["Odpověď 1"],
-      "expert": false,
-      "id": 1718892345678
+      "expert": false
     }
   ]
 }
-Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
+Pokud to jde, přidej ke každé kartě unikátní ID (timestamp).</div>
         </div>
         <div class="modal-footer"><button class="btn-main" onclick="copyAiPrompt()">Kopírovat do schránky</button></div>
     </div>
@@ -232,7 +232,7 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
         area.innerHTML = html + "</tbody></table>";
     }
 
-    // --- IMPORT S AUTOMATICKÝM DOPLNĚNÍM ID ---
+    // --- IMPORT S AUTOMATICKÝM DOPLNĚNÍM ID (FIX v3.2) ---
     function importData(e) {
         const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
@@ -247,10 +247,9 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
                 for (const deckName in loadedData) {
                     loadedData[deckName].forEach((card, index) => {
                         if (!card.id) {
-                            // Vygenerujeme ID pokud chybí (timestamp + random suffix pro jistotu)
+                            // Vygenerujeme ID pokud chybí
                             card.id = Date.now() + Math.floor(Math.random() * 100000) + index;
                         }
-                        // Doplníme defaultní SRS data, pokud chybí
                         if (typeof card.reps === 'undefined') {
                             card.reps = 0; card.interval = 0; card.ef = 2.5; card.nextReview = Date.now();
                         }
@@ -268,7 +267,7 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
         reader.readAsText(file);
     }
 
-    // --- OSTATNÍ FUNKCE ---
+    // --- EDITACE KARET ---
     function openModal(index = null) {
         document.getElementById('modal-overlay').style.display = 'flex';
         tempImgQ = ""; tempImgA = "";
@@ -300,7 +299,7 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
         if (!q || !aVal) { alert("Vyplňte otázku a odpověď."); return; }
 
         const newCard = {
-            id: Date.now(), // Unikátní ID
+            id: Date.now(),
             q: q,
             a: aVal.split('\n'),
             qImg: tempImgQ,
@@ -327,6 +326,7 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
         renderDeckList();
     }
 
+    // --- FUNKCE POSUNU A KOPIE ---
     function moveCard(index, direction) {
         const newIndex = index + direction;
         if (newIndex >= 0 && newIndex < decks[currentDeck].length) {
@@ -350,6 +350,7 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
         if(confirm("Smazat?")) { decks[currentDeck].splice(index, 1); saveToStorage(); renderMainArea(); renderDeckList(); }
     }
 
+    // --- OBRÁZKY ---
     function processFile(file, type) {
         if (!file) return;
         const reader = new FileReader();
@@ -369,6 +370,7 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
     function removeImg(type) { if (type === 'q') tempImgQ = ""; else tempImgA = ""; updatePreview(type); }
     function showLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
 
+    // --- SYSTÉM ---
     function addNewDeck() { const n = prompt("Název sady:"); if(n) { decks[n] = []; currentDeck = n; saveToStorage(); renderDeckList(); renderMainArea(); } }
     function deleteDeck() { if(confirm("Smazat celou sadu?")) { delete decks[currentDeck]; currentDeck = null; saveToStorage(); renderDeckList(); document.getElementById('main-area').innerHTML = ""; } }
     function saveToStorage() { localStorage.setItem("teacher_decks_v3", JSON.stringify(decks)); }
@@ -379,7 +381,7 @@ Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "historie_srs.json"; a.click();
     }
 
-    // QR & AI
+    // --- QR & AI ---
     function openQrModal() { document.getElementById('qr-modal').style.display='flex'; document.getElementById('qr-result').classList.add('hidden'); }
     function generateQr() {
         const f = document.getElementById('qr-filename').value; if(!f) return alert("Zadejte název!");
