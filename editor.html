@@ -2,9 +2,9 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Editor Dějepis SRS v3.0</title>
+    <title>Editor Dějepis SRS v3.1</title>
     <style>
-        :root { --primary: #1a3a5a; --accent: #e67e22; --bg: #f4f7f6; --text: #2c3e50; --danger: #e74c3c; }
+        :root { --primary: #1a3a5a; --accent: #e67e22; --bg: #f4f7f6; --text: #2c3e50; --danger: #e74c3c; --success: #27ae60; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; }
         
         /* HEADER */
@@ -12,9 +12,13 @@
         h1 { margin: 0; font-size: 1.2rem; color: var(--primary); display: flex; align-items: center; gap: 10px; }
         
         .top-btn-group { display: flex; gap: 10px; }
-        button { cursor: pointer; padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; }
+        button { cursor: pointer; padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; font-size: 0.9rem; }
+        
+        /* Barvy tlačítek */
         .btn-main { background: var(--primary); color: white; } .btn-main:hover { background: #132c45; }
         .btn-sec { background: white; border: 1px solid #ccc; color: #555; } .btn-sec:hover { background: #f0f0f0; }
+        .btn-qr { background: #fff8e1; border: 1px solid #ffe082; color: #f57f17; } .btn-qr:hover { background: #ffecb3; }
+        .btn-ai { background: #e6f4ea; border: 1px solid #ceead6; color: #1e8e3e; } .btn-ai:hover { background: #dceid5; }
         
         /* LAYOUT */
         .workspace { display: flex; flex: 1; overflow: hidden; }
@@ -30,7 +34,7 @@
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #f8f9fa; font-weight: 600; color: #666; font-size: 0.9rem; }
-        .thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
+        .thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; cursor: zoom-in; }
         
         /* AKCE */
         .action-cell { white-space: nowrap; text-align: right; }
@@ -40,6 +44,7 @@
         /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; }
         .modal { background: white; width: 600px; max-width: 95%; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
+        .modal-header { padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between; align-items: center;}
         .modal-body { padding: 20px; overflow-y: auto; }
         .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; text-align: right; background: #f8f9fa; }
         
@@ -51,13 +56,23 @@
         .img-drop-zone { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 6px; margin-top: 5px; background: #fafafa; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; }
         .preview-large { max-height: 100px; max-width: 100%; display: block; border: 1px solid #ddd; }
         .hidden { display: none; }
+
+        /* QR & AI Styles */
+        .link-box { background: #e3f2fd; padding: 10px; border: 1px solid #90caf9; color: #1565c0; font-family: monospace; word-break: break-all; margin-top:10px; cursor: pointer; text-align: center;}
+        .ai-box { background: #f4f7f6; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 15px; color: #333; }
+        
+        /* Lightbox */
+        .lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; cursor: zoom-out; }
+        .lightbox-img { max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🎓 Editor v3.0 <span style="font-size:0.8rem; font-weight:normal; opacity:0.7;">(ID + Obrázky + Řazení)</span></h1>
+    <h1>🎓 Editor v3.1 <span style="font-size:0.8rem; font-weight:normal; opacity:0.7;">(Všechny funkce)</span></h1>
     <div class="top-btn-group">
+        <button class="btn-qr" onclick="openQrModal()">🔗 Generovat odkaz</button>
+        <button class="btn-ai" onclick="openAiModal()">🤖 AI Prompt</button>
         <button class="btn-sec" onclick="document.getElementById('file-in').click()">📂 Nahrát JSON</button>
         <button class="btn-main" onclick="exportData()">💾 Uložit pro žáky</button>
     </div>
@@ -80,7 +95,7 @@
 
 <div class="modal-overlay" id="modal-overlay">
     <div class="modal">
-        <div style="padding:15px; border-bottom:1px solid #eee; font-weight:bold;">Karta</div>
+        <div class="modal-header"><span>Karta</span><button onclick="closeModal()" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">✖</button></div>
         <div class="modal-body">
             <input type="hidden" id="edit-id">
             
@@ -118,13 +133,63 @@
     </div>
 </div>
 
+<div class="modal-overlay" id="qr-modal">
+    <div class="modal" style="width:500px;">
+        <div class="modal-header"><span>🔗 Generátor odkazu</span><button onclick="document.getElementById('qr-modal').style.display='none'" style="border:none; background:none; cursor:pointer;">✖</button></div>
+        <div class="modal-body">
+            <p>1. Nahrajte uložený JSON soubor na GitHub.</p>
+            <p>2. Zadejte přesný název souboru (např. <code>velka_morava.json</code>):</p>
+            <input type="text" id="qr-filename" placeholder="nazev_souboru.json">
+            <div id="qr-result" class="hidden" style="margin-top:20px; text-align:center;">
+                <label>Odkaz pro žáky:</label>
+                <div class="link-box" id="qr-link-text" onclick="copyLink()"></div>
+                <div style="margin-top:15px;"><img id="qr-image" style="max-width:200px; border:1px solid #ccc;"></div>
+            </div>
+        </div>
+        <div class="modal-footer"><button class="btn-main" onclick="generateQr()">Generovat</button></div>
+    </div>
+</div>
+
+<div class="modal-overlay" id="ai-modal">
+    <div class="modal">
+        <div class="modal-header"><span>🤖 AI Prompt</span><button onclick="document.getElementById('ai-modal').style.display='none'" style="border:none; background:none; cursor:pointer;">✖</button></div>
+        <div class="modal-body">
+            <p>Zkopírujte tento text do ChatGPT/Gemini pro vytvoření otázek:</p>
+            <div class="ai-box" id="ai-prompt-text">Vytvoř mi sadu 10 otázek na téma [TÉMA].
+Výstup musí být čistý JSON v tomto formátu:
+{
+  "Název Tématu": [
+    {
+      "q": "Otázka?",
+      "a": ["Odpověď 1"],
+      "expert": false,
+      "id": 1
+    },
+    {
+      "q": "Těžká otázka?",
+      "a": ["Odpověď"],
+      "expert": true,
+      "id": 2
+    }
+  ]
+}
+Ke každé kartě přidej unikátní číselné ID.</div>
+        </div>
+        <div class="modal-footer"><button class="btn-main" onclick="copyAiPrompt()">Kopírovat do schránky</button></div>
+    </div>
+</div>
+
+<div class="lightbox-overlay" id="lightbox" onclick="this.style.display='none'">
+    <img id="lightbox-img" class="lightbox-img">
+</div>
+
 <script>
     let decks = JSON.parse(localStorage.getItem("teacher_decks_v3")) || {};
     let currentDeck = null;
-    let editingCardId = null; // Zde ukládáme index v poli, ne ID karty
+    let editingCardId = null; 
     let tempImgQ = "", tempImgA = "";
 
-    // --- ZÁKLADNÍ UI ---
+    // --- UI FUNKCE ---
     function renderDeckList() {
         const list = document.getElementById('deck-list');
         list.innerHTML = "";
@@ -158,13 +223,13 @@
         `;
         
         decks[currentDeck].forEach((c, i) => {
-            const qImg = c.qImg ? `<img src="${c.qImg}" class="thumb">` : '-';
-            const aImg = c.aImg ? `<img src="${c.aImg}" class="thumb">` : '-';
+            const qImg = c.qImg ? `<img src="${c.qImg}" class="thumb" onclick="showLightbox('${c.qImg}')">` : '-';
+            const aImg = c.aImg ? `<img src="${c.aImg}" class="thumb" onclick="showLightbox('${c.aImg}')">` : '-';
             const expert = c.expert ? '🎓 ' : '';
             
             html += `<tr>
                 <td>${qImg}</td>
-                <td>${expert} ${c.q} <br><small style="color:#999; font-size:0.7em;">ID: ${c.id}</small></td>
+                <td>${expert} ${c.q}</td>
                 <td>${Array.isArray(c.a) ? c.a.join(', ') : c.a}</td>
                 <td>${aImg}</td>
                 <td class="action-cell">
@@ -179,7 +244,7 @@
         area.innerHTML = html + "</tbody></table>";
     }
 
-    // --- LOGIKA EDITACE ---
+    // --- EDITACE KARET ---
     function openModal(index = null) {
         document.getElementById('modal-overlay').style.display = 'flex';
         tempImgQ = ""; tempImgA = "";
@@ -210,20 +275,17 @@
 
         if (!q || !aVal) { alert("Vyplňte otázku a odpověď."); return; }
 
-        // VYTVOŘENÍ KARTY S ID (Klíčový moment)
         const newCard = {
-            id: Date.now(), // Unikátní ID podle času
+            id: Date.now(), // Unikátní ID
             q: q,
             a: aVal.split('\n'),
             qImg: tempImgQ,
             aImg: tempImgA,
             expert: isExpert,
-            // SRS výchozí hodnoty
             reps: 0, interval: 0, ef: 2.5, nextReview: Date.now()
         };
 
         if (editingCardId !== null) {
-            // Při úpravě zachováme staré ID a statistiky!
             const old = decks[currentDeck][editingCardId];
             newCard.id = old.id || Date.now();
             newCard.reps = old.reps || 0;
@@ -255,7 +317,7 @@
     function duplicateCard(index) {
         const source = decks[currentDeck][index];
         const copy = JSON.parse(JSON.stringify(source));
-        copy.id = Date.now(); // Důležité: Duplikát musí mít nové ID!
+        copy.id = Date.now(); 
         copy.q += " (kopie)";
         decks[currentDeck].splice(index + 1, 0, copy);
         saveToStorage(); renderMainArea(); renderDeckList();
@@ -283,8 +345,9 @@
         else { img.classList.add('hidden'); btn.classList.add('hidden'); }
     }
     function removeImg(type) { if (type === 'q') tempImgQ = ""; else tempImgA = ""; updatePreview(type); }
+    function showLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
 
-    // --- SYSTÉM ---
+    // --- IMPORT / EXPORT ---
     function addNewDeck() { const n = prompt("Název sady:"); if(n) { decks[n] = []; currentDeck = n; saveToStorage(); renderDeckList(); renderMainArea(); } }
     function deleteDeck() { if(confirm("Smazat celou sadu?")) { delete decks[currentDeck]; currentDeck = null; saveToStorage(); renderDeckList(); document.getElementById('main-area').innerHTML = ""; } }
     function saveToStorage() { localStorage.setItem("teacher_decks_v3", JSON.stringify(decks)); }
@@ -301,13 +364,28 @@
         reader.onload = (v) => {
             try {
                 let txt = v.target.result;
-                if (txt.charCodeAt(0) === 0xFEFF) txt = txt.slice(1); // Edge Fix
+                if (txt.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
                 decks = Object.assign(decks, JSON.parse(txt));
                 saveToStorage(); renderDeckList(); alert("Nahráno!");
             } catch(e) { alert("Chyba JSON"); }
         };
         reader.readAsText(file);
     }
+
+    // --- QR & AI LOGIC ---
+    function openQrModal() { document.getElementById('qr-modal').style.display='flex'; document.getElementById('qr-result').classList.add('hidden'); }
+    function generateQr() {
+        const f = document.getElementById('qr-filename').value; if(!f) return alert("Zadejte název!");
+        // Změňte 'tondam77-faith.github.io' na vaši reálnou adresu, pokud je jiná
+        const url = `https://tondam77-faith.github.io/historie/?balicek=${f}`;
+        document.getElementById('qr-link-text').innerText = url;
+        document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
+        document.getElementById('qr-result').classList.remove('hidden');
+    }
+    function copyLink() { navigator.clipboard.writeText(document.getElementById('qr-link-text').innerText).then(()=>alert("Zkopírováno!")); }
+    
+    function openAiModal() { document.getElementById('ai-modal').style.display='flex'; }
+    function copyAiPrompt() { navigator.clipboard.writeText(document.getElementById('ai-prompt-text').innerText).then(()=>alert("Zkopírováno!")); }
 
     renderDeckList();
 </script>
