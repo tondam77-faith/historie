@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Editor Dějepis SRS v3.1</title>
+    <title>Editor Dějepis SRS v3.2</title>
     <style>
         :root { --primary: #1a3a5a; --accent: #e67e22; --bg: #f4f7f6; --text: #2c3e50; --danger: #e74c3c; --success: #27ae60; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; }
@@ -14,7 +14,6 @@
         .top-btn-group { display: flex; gap: 10px; }
         button { cursor: pointer; padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; font-size: 0.9rem; }
         
-        /* Barvy tlačítek */
         .btn-main { background: var(--primary); color: white; } .btn-main:hover { background: #132c45; }
         .btn-sec { background: white; border: 1px solid #ccc; color: #555; } .btn-sec:hover { background: #f0f0f0; }
         .btn-qr { background: #fff8e1; border: 1px solid #ffe082; color: #f57f17; } .btn-qr:hover { background: #ffecb3; }
@@ -30,13 +29,11 @@
         .main-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
         .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
         
-        /* TABULKA */
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
         th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #f8f9fa; font-weight: 600; color: #666; font-size: 0.9rem; }
         .thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; cursor: zoom-in; }
         
-        /* AKCE */
         .action-cell { white-space: nowrap; text-align: right; }
         .icon-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.6; padding: 5px; }
         .icon-btn:hover { opacity: 1; transform: scale(1.1); }
@@ -57,11 +54,9 @@
         .preview-large { max-height: 100px; max-width: 100%; display: block; border: 1px solid #ddd; }
         .hidden { display: none; }
 
-        /* QR & AI Styles */
         .link-box { background: #e3f2fd; padding: 10px; border: 1px solid #90caf9; color: #1565c0; font-family: monospace; word-break: break-all; margin-top:10px; cursor: pointer; text-align: center;}
         .ai-box { background: #f4f7f6; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 15px; color: #333; }
         
-        /* Lightbox */
         .lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; cursor: zoom-out; }
         .lightbox-img { max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
@@ -69,7 +64,7 @@
 <body>
 
 <header>
-    <h1>🎓 Editor v3.1 <span style="font-size:0.8rem; font-weight:normal; opacity:0.7;">(Všechny funkce)</span></h1>
+    <h1>🎓 Editor v3.2 <span style="font-size:0.8rem; font-weight:normal; opacity:0.7;">(Auto-ID Fix)</span></h1>
     <div class="top-btn-group">
         <button class="btn-qr" onclick="openQrModal()">🔗 Generovat odkaz</button>
         <button class="btn-ai" onclick="openAiModal()">🤖 AI Prompt</button>
@@ -154,7 +149,6 @@
     <div class="modal">
         <div class="modal-header"><span>🤖 AI Prompt</span><button onclick="document.getElementById('ai-modal').style.display='none'" style="border:none; background:none; cursor:pointer;">✖</button></div>
         <div class="modal-body">
-            <p>Zkopírujte tento text do ChatGPT/Gemini pro vytvoření otázek:</p>
             <div class="ai-box" id="ai-prompt-text">Vytvoř mi sadu 10 otázek na téma [TÉMA].
 Výstup musí být čistý JSON v tomto formátu:
 {
@@ -163,17 +157,11 @@ Výstup musí být čistý JSON v tomto formátu:
       "q": "Otázka?",
       "a": ["Odpověď 1"],
       "expert": false,
-      "id": 1
-    },
-    {
-      "q": "Těžká otázka?",
-      "a": ["Odpověď"],
-      "expert": true,
-      "id": 2
+      "id": 1718892345678
     }
   ]
 }
-Ke každé kartě přidej unikátní číselné ID.</div>
+Pokud můžeš, vygeneruj unikátní ID (timestamp) ke každé kartě.</div>
         </div>
         <div class="modal-footer"><button class="btn-main" onclick="copyAiPrompt()">Kopírovat do schránky</button></div>
     </div>
@@ -244,7 +232,43 @@ Ke každé kartě přidej unikátní číselné ID.</div>
         area.innerHTML = html + "</tbody></table>";
     }
 
-    // --- EDITACE KARET ---
+    // --- IMPORT S AUTOMATICKÝM DOPLNĚNÍM ID ---
+    function importData(e) {
+        const file = e.target.files[0]; if(!file) return;
+        const reader = new FileReader();
+        reader.onload = (v) => {
+            try {
+                let txt = v.target.result;
+                if (txt.charCodeAt(0) === 0xFEFF) txt = txt.slice(1); // Edge Fix
+                
+                const loadedData = JSON.parse(txt);
+                
+                // AUTO-FIX: Doplnění chybějících ID
+                for (const deckName in loadedData) {
+                    loadedData[deckName].forEach((card, index) => {
+                        if (!card.id) {
+                            // Vygenerujeme ID pokud chybí (timestamp + random suffix pro jistotu)
+                            card.id = Date.now() + Math.floor(Math.random() * 100000) + index;
+                        }
+                        // Doplníme defaultní SRS data, pokud chybí
+                        if (typeof card.reps === 'undefined') {
+                            card.reps = 0; card.interval = 0; card.ef = 2.5; card.nextReview = Date.now();
+                        }
+                    });
+                }
+
+                decks = Object.assign(decks, loadedData);
+                saveToStorage(); 
+                renderDeckList(); 
+                currentDeck = null; 
+                renderMainArea(); 
+                alert("Nahráno! ID byla automaticky doplněna.");
+            } catch(e) { alert("Chyba JSON: " + e.message); }
+        };
+        reader.readAsText(file);
+    }
+
+    // --- OSTATNÍ FUNKCE ---
     function openModal(index = null) {
         document.getElementById('modal-overlay').style.display = 'flex';
         tempImgQ = ""; tempImgA = "";
@@ -303,7 +327,6 @@ Ke každé kartě přidej unikátní číselné ID.</div>
         renderDeckList();
     }
 
-    // --- POSUN A DUPLIKACE ---
     function moveCard(index, direction) {
         const newIndex = index + direction;
         if (newIndex >= 0 && newIndex < decks[currentDeck].length) {
@@ -327,7 +350,6 @@ Ke každé kartě přidej unikátní číselné ID.</div>
         if(confirm("Smazat?")) { decks[currentDeck].splice(index, 1); saveToStorage(); renderMainArea(); renderDeckList(); }
     }
 
-    // --- OBRÁZKY ---
     function processFile(file, type) {
         if (!file) return;
         const reader = new FileReader();
@@ -347,7 +369,6 @@ Ke každé kartě přidej unikátní číselné ID.</div>
     function removeImg(type) { if (type === 'q') tempImgQ = ""; else tempImgA = ""; updatePreview(type); }
     function showLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
 
-    // --- IMPORT / EXPORT ---
     function addNewDeck() { const n = prompt("Název sady:"); if(n) { decks[n] = []; currentDeck = n; saveToStorage(); renderDeckList(); renderMainArea(); } }
     function deleteDeck() { if(confirm("Smazat celou sadu?")) { delete decks[currentDeck]; currentDeck = null; saveToStorage(); renderDeckList(); document.getElementById('main-area').innerHTML = ""; } }
     function saveToStorage() { localStorage.setItem("teacher_decks_v3", JSON.stringify(decks)); }
@@ -358,25 +379,10 @@ Ke každé kartě přidej unikátní číselné ID.</div>
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "historie_srs.json"; a.click();
     }
 
-    function importData(e) {
-        const file = e.target.files[0]; if(!file) return;
-        const reader = new FileReader();
-        reader.onload = (v) => {
-            try {
-                let txt = v.target.result;
-                if (txt.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
-                decks = Object.assign(decks, JSON.parse(txt));
-                saveToStorage(); renderDeckList(); alert("Nahráno!");
-            } catch(e) { alert("Chyba JSON"); }
-        };
-        reader.readAsText(file);
-    }
-
-    // --- QR & AI LOGIC ---
+    // QR & AI
     function openQrModal() { document.getElementById('qr-modal').style.display='flex'; document.getElementById('qr-result').classList.add('hidden'); }
     function generateQr() {
         const f = document.getElementById('qr-filename').value; if(!f) return alert("Zadejte název!");
-        // Změňte 'tondam77-faith.github.io' na vaši reálnou adresu, pokud je jiná
         const url = `https://tondam77-faith.github.io/historie/?balicek=${f}`;
         document.getElementById('qr-link-text').innerText = url;
         document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
