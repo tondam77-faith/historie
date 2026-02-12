@@ -6,7 +6,7 @@
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
     <meta name="theme-color" content="#fdfbf7">
-    <title>Dějepis - Smart SRS v2.5 (Full)</title>
+    <title>Dějepis - Smart SRS v3.1</title>
     <style>
         :root {
             --primary: #1a3a5a;
@@ -203,7 +203,7 @@
                 <button class="btn-utility" style="width:100%" onclick="document.getElementById('help-box').classList.add('hidden')">Rozumím</button>
             </div>
             <button onclick="document.getElementById('help-box').classList.remove('hidden')" style="background:none; border:none; color:var(--accent); cursor:pointer; font-weight:bold; font-size:0.9rem; margin-bottom:10px;">❓ Jak to funguje?</button>
-            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v3.0 (Final)</div>
+            <div id="app-version" style="font-size: 0.7rem; color: #bdc3c7;">Verze aplikace: v3.1 (Full Content)</div>
         </div>
     </div>
 
@@ -270,7 +270,7 @@
 
 <script>
     let db;
-    const APP_VERSION_DISPLAY = "v2.5"; 
+    const APP_VERSION_DISPLAY = "v3.1"; 
     const DB_NAME = "HistorySRSDatabase", DB_VERSION = 1;
     let userMode = localStorage.getItem('history_mode') || 'expert';
 
@@ -280,11 +280,41 @@
 
     let decks = {}, sessionCards = [], sessionIdx = 0, sessionLimit = 20, transitioning = false;
 
-    // --- INITIAL CONTENT ---
+    // --- INITIAL CONTENT (KOMPLETNÍ UČIVO) ---
     const INITIAL_CONTENT = {
         "Arabská říše": [
             { q: "Kdo byli původní obyvatelé Arabského poloostrova?", a: ["Kočovní pastevci – beduíni."], id: 1, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
-            { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."], id: 2, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false }
+            { q: "Co znamená v překladu slovo islám?", a: ["Odevzdanost Bohu."], id: 2, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Ve kterém století se zrodil islám?", a: ["V 7. století."], id: 3, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Kdo je podle islámu jediný Bůh a kdo je jeho prorok?", a: ["Bůh: Alláh", "Prorok: Muhammad (Mohamed)"], id: 4, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Jak se jmenuje posvátná kniha muslimů?", a: ["Korán."], id: 5, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Vyjmenuj 5 pilířů islámu.", a: ["Víra v jednoho Boha - Alláha", "Modlitba 5x denně", "Almužna chudým", "Půst v měsíci Ramadánu", "Pouť do Mekky jednou za život"], id: 6, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "Co je to chalífát?", a: ["Jednotná arabská říše v čele s chalífou."], id: 7, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Kam až sahala Arabská říše v době rozmachu?", a: ["Od Atlantiku přes severní Afriku až k Indii."], id: 8, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "Které evropské státy leží na Pyrenejském poloostrově?", a: ["Španělsko", "Portugalsko"], id: 9, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Kdo byl Ibrahim ibn Jákub?", a: ["Kupec, který v 10. stol. napsal první popis Prahy."], id: 10, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "V jakých vědách Arabové vynikali?", a: ["Matematika a fyzika", "Zeměpis", "Lékařství"], id: 11, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Jaké nové plodiny přinesli Arabové do Evropy?", a: ["Rýže", "Bavlna", "Citrony a pomeranče"], id: 12, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Proč mají islámské stavby jen geometrické vzory?", a: ["Protože Korán zakazuje zobrazovat lidské postavy."], id: 13, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: true },
+            { q: "Jak se nazývá štíhlá věž u mešity?", a: ["Minaret."], id: 14, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false },
+            { q: "Které město je nejposvátnější pro muslimy?", a: ["Mekka (s chrámem Ka'ba)."], id: 15, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Arabská říše", archived: false, expert: false }
+        ],
+        "Slované a Sámova říše": [
+            { q: "Kdy přišli Slované na naše území?", a: ["V 5. až 6. století.", "V rámci tzv. druhé vlny stěhování národů."], id: 401, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Kde byla původní pravlast Slovanů?", a: ["Ve východní Evropě.", "Mezi řekami Vislou a Dněprem (severně od Karpat)."], id: 402, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Do kterých tří směrů se Slované vydali z pravlasti?", a: ["na západ (střední Evropa)", "na jih (Balkán)", "na východ (za řeku Dněpr)"], id: 403, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Jak se nazýval typický slovanský dům?", a: ["Polozemnice.", "Částečně zahloubená chata s dřevěnou konstrukcí a střechou."], id: 404, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "V čem spočívalo dvojpolní hospodářství?", a: ["Pole bylo rozděleno na dvě části:", "jedna polovina se osela (jař)", "druhá odpočívala (úhor)."], id: 405, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "V co věřili staří Slované před přijetím křesťanství?", a: ["Byli pohané.", "Uctívali přírodní síly", "a různé bohy (např. Perun nebo Radegast)."], id: 406, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Kdo byl Sámo?", a: ["Francký kupec.", "Slované si ho zvolili za svého vůdce po vítězství nad Avary."], id: 407, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Proč vznikla Sámova říše?", a: ["Jako kmenový svaz pro společnou obranu.", "Sloužila k ochraně proti nájezdům Avarů a útokům Franků."], id: 408, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Ve kterém století existovala Sámova říše?", a: ["V 7. století (přibližně první polovina)."], id: 409, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Jak se jmenovala vítězná bitva Slovanů proti Frankům roku 631?", a: ["Bitva u Wogastisburgu."], id: 410, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Kterého franského krále Sámo porazil v bitvě u Wogastisburgu?", a: ["Dagoberta I."], id: 411, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Který jediný písemný pramen nás informuje o Sámově říši?", a: ["Fredegarova kronika."], id: 412, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Co se stalo s říší po Sámově smrti?", a: ["Kmenový svaz se rozpadl.", "Sámova říše jako celek zanikla."], id: 413, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: false },
+            { q: "Které řemeslné předměty se dochovaly díky archeologickým vykopávkám?", a: ["Šperky (např. náušnice), ostruhy, zbraně a zemědělské nástroje."], id: 414, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true },
+            { q: "Vyjmenuj alespoň tři první slovanské státy, které vznikaly po stěhování národů.", a: ["západ: Velká Morava, Český stát, Polsko", "jih: Bulharsko", "východ: Kyjevská Rus."], id: 415, nextReview: Date.now(), ef: 2.5, reps: 0, interval: 0, deck: "Slované a Sámova říše", archived: false, expert: true }
         ]
     };
 
@@ -320,7 +350,6 @@
                 const response = await fetch(deckFile);
                 if (!response.ok) throw new Error("Soubor nenalezen");
                 let text = await response.text();
-                // FIX PRO EDGE
                 if (text.charCodeAt(0) === 0xFEFF) { text = text.slice(1); }
                 const newData = JSON.parse(text);
                 const currentData = (await dbLoad()) || INITIAL_CONTENT;
@@ -338,14 +367,13 @@
         reader.onload = async (v) => {
             try {
                 let text = v.target.result;
-                // FIX PRO EDGE
                 if (text.charCodeAt(0) === 0xFEFF) { text = text.slice(1); }
                 const newData = JSON.parse(text);
                 const current = (await dbLoad()) || INITIAL_CONTENT;
                 const merged = smartMerge(current, newData);
                 await dbSave(merged);
                 alert("Nahráno!"); location.reload();
-            } catch (err) { alert("Chyba importu (zkontrolujte JSON): " + err.message); }
+            } catch (err) { alert("Chyba importu: " + err.message); }
         };
         reader.readAsText(file);
     }
@@ -416,14 +444,13 @@
         if(target) target.classList.remove('hidden');
     }
 
-    // --- UČENÍ (ZDE BYLA CHYBA - OPRAVENO s _deckName) ---
+    // --- UČENÍ ---
     function startSession() {
         const sel = Array.from(document.querySelectorAll('#deck-list input:checked')).map(i => i.value);
         if(!sel.length) return; 
         
         let all = [];
         sel.forEach(n => {
-            // Přidáváme _deckName ke kartě, aby handleSRS věděl, kam ukládat
             const mapped = decks[n].map(c => ({...c, _deckName: n}));
             all = all.concat(mapped);
         });
@@ -490,7 +517,6 @@
         window.speechSynthesis.cancel();
         updateStats(true);
         
-        // Změna v kopii session karty
         c.reps = c.reps || 0; c.interval = c.interval || 0; c.ef = c.ef || 2.5;
         if(q < 3){ c.reps = 0; c.interval = 0; c.nextReview = Date.now(); sessionCards.push(c); }
         else {
@@ -499,12 +525,10 @@
             c.reps++; c.ef = Math.max(1.3, c.ef + (0.1 - (5-q)*(0.08 + (5-q)*0.02))); c.nextReview = Date.now() + (c.interval * 86400000);
         }
         
-        // UKLÁDÁNÍ DO HLAVNÍHO DECKU
-        const deckName = c._deckName; // Tady to dříve padalo, pokud chybělo _deckName
+        const deckName = c._deckName; 
         if (deckName && decks[deckName]) {
             const idx = decks[deckName].findIndex(i => i.id === c.id);
             if (idx !== -1) {
-                // Vytvoříme objekt k uložení (bez dočasného _deckName)
                 const toSave = { ...c };
                 delete toSave._deckName;
                 decks[deckName][idx] = toSave;
@@ -530,10 +554,9 @@
         document.getElementById('l-easy').innerText = getNextText(5);
     }
 
-    // --- EDITOR (MOBILE) ---
+    // --- EDITOR ---
     let activeDeck = "", currentQImg = "", currentAImg = "";
     
-    // SAFE OPEN: Defenzivní kód
     window.openEditor = function(n) { 
         try {
             activeDeck = n; 
@@ -562,13 +585,11 @@
     function previewImg(e, type) { const reader = new FileReader(); reader.onload = () => { if(type === 'q') { currentQImg = reader.result; document.getElementById('prev-q').src = currentQImg; document.getElementById('prev-q').style.display = "block"; document.getElementById('del-q').style.display = "inline"; } if(type === 'a') { currentAImg = reader.result; document.getElementById('prev-a').src = currentAImg; document.getElementById('prev-a').style.display = "block"; document.getElementById('del-a').style.display = "inline"; } }; reader.readAsDataURL(e.target.files[0]); }
     function removeImg(type) { if(type === 'q') { currentQImg = ""; document.getElementById('prev-q').style.display = "none"; document.getElementById('del-q').style.display = "none"; document.querySelector('input[onchange*="previewImg(event, \'q\')"]').value = ""; } if(type === 'a') { currentAImg = ""; document.getElementById('prev-a').style.display = "none"; document.getElementById('del-a').style.display = "none"; document.querySelector('input[onchange*="previewImg(event, \'a\')"]').value = ""; } }
     
-    // SAFE SAVE: Kontrola existence prvků před čtením
     function saveCard() { 
         try {
             const q = document.getElementById('in-card-q').value.trim();
             const aVal = document.getElementById('in-card-a').value.trim();
             const id = document.getElementById('in-card-id').value;
-            // DEFENZIVA: Pokud checkbox neexistuje, ber false
             const expertEl = document.getElementById('in-card-expert');
             const isExpert = expertEl ? expertEl.checked : false; 
             
@@ -587,10 +608,8 @@
         document.getElementById('in-card-q').value = c.q; 
         document.getElementById('in-card-a').value = c.a.join('\n'); 
         document.getElementById('in-card-id').value = c.id; 
-        // DEFENZIVA:
         const expertEl = document.getElementById('in-card-expert');
         if(expertEl) expertEl.checked = c.expert || false; 
-        
         currentQImg = c.qImg || ""; if(currentQImg) { document.getElementById('prev-q').src = currentQImg; document.getElementById('prev-q').style.display="block"; document.getElementById('del-q').style.display="inline"; } else removeImg('q'); 
         currentAImg = c.aImg || ""; if(currentAImg) { document.getElementById('prev-a').src = currentAImg; document.getElementById('prev-a').style.display="block"; document.getElementById('del-a').style.display="inline"; } else removeImg('a'); 
     }

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'historie-srs-v3.0-FINAL';
+const CACHE_NAME = 'historie-srs-v3.1-FINAL';
 const ASSETS = [
   './',
   './index.html',
