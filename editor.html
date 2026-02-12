@@ -2,7 +2,7 @@
 <html lang="cs">
 <head>
     <meta charset="UTF-8">
-    <title>Učitelský Editor - Dějepis SRS v1.5+ (Vylepšený)</title>
+    <title>Editor Dějepis SRS v3.0</title>
     <style>
         :root { --primary: #1a3a5a; --accent: #e67e22; --bg: #f4f7f6; --text: #2c3e50; --danger: #e74c3c; }
         body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--text); margin: 0; height: 100vh; display: flex; flex-direction: column; }
@@ -15,32 +15,31 @@
         button { cursor: pointer; padding: 8px 15px; border-radius: 6px; border: none; font-weight: bold; transition: 0.2s; }
         .btn-main { background: var(--primary); color: white; } .btn-main:hover { background: #132c45; }
         .btn-sec { background: white; border: 1px solid #ccc; color: #555; } .btn-sec:hover { background: #f0f0f0; }
-        .btn-danger { background: #fff; border: 1px solid var(--danger); color: var(--danger); } .btn-danger:hover { background: var(--danger); color: white; }
-        .btn-ai { background: #e6f4ea; border: 1px solid #ceead6; color: #1e8e3e; } .btn-ai:hover { background: #dceid5; }
-        .btn-qr { background: #fff8e1; border: 1px solid #ffe082; color: #f57f17; } .btn-qr:hover { background: #ffecb3; }
         
+        /* LAYOUT */
         .workspace { display: flex; flex: 1; overflow: hidden; }
         .sidebar { width: 250px; background: white; border-right: 1px solid #ddd; display: flex; flex-direction: column; }
         .deck-list { flex: 1; overflow-y: auto; padding: 10px; }
-        .deck-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 6px; display: flex; justify-content: space-between; }
-        .deck-item:hover { background: #f0f5f9; } .deck-item.active { background: var(--primary); color: white; }
+        .deck-item { padding: 12px; margin-bottom: 5px; cursor: pointer; border-radius: 6px; display: flex; justify-content: space-between; background: #f9f9f9; }
+        .deck-item:hover { background: #eef4f9; } .deck-item.active { background: var(--primary); color: white; }
         
         .main-area { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; }
         .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; background: white; padding: 15px; border-radius: 8px; border: 1px solid #ddd; }
         
-        /* TABLE */
+        /* TABULKA */
         table { width: 100%; border-collapse: collapse; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 5px rgba(0,0,0,0.02); }
-        th, td { padding: 12px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
+        th, td { padding: 10px 15px; text-align: left; border-bottom: 1px solid #eee; vertical-align: middle; }
         th { background: #f8f9fa; font-weight: 600; color: #666; font-size: 0.9rem; }
-        .col-img { width: 50px; text-align: center; }
-        .thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #eee; background: #eee; cursor: zoom-in; }
-        .action-btn { background: none; border: none; font-size: 1.1rem; padding: 5px; opacity: 0.6; cursor: pointer; transition: 0.2s; }
-        .action-btn:hover { opacity: 1; transform: scale(1.2); }
+        .thumb { width: 40px; height: 40px; object-fit: cover; border-radius: 4px; border: 1px solid #ccc; }
+        
+        /* AKCE */
+        .action-cell { white-space: nowrap; text-align: right; }
+        .icon-btn { background: none; border: none; font-size: 1.1rem; cursor: pointer; opacity: 0.6; padding: 5px; }
+        .icon-btn:hover { opacity: 1; transform: scale(1.1); }
 
         /* MODAL */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; display: none; justify-content: center; align-items: center; }
-        .modal { background: white; width: 600px; max-width: 90%; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
-        .modal-header { padding: 15px 20px; background: #f8f9fa; border-bottom: 1px solid #eee; font-weight: bold; display: flex; justify-content: space-between; }
+        .modal { background: white; width: 600px; max-width: 95%; max-height: 90vh; border-radius: 12px; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.2); }
         .modal-body { padding: 20px; overflow-y: auto; }
         .modal-footer { padding: 15px 20px; border-top: 1px solid #eee; text-align: right; background: #f8f9fa; }
         
@@ -50,28 +49,19 @@
         textarea { min-height: 80px; resize: vertical; }
         
         .img-drop-zone { border: 2px dashed #ccc; padding: 10px; text-align: center; border-radius: 6px; margin-top: 5px; background: #fafafa; display: flex; align-items: center; justify-content: center; gap: 10px; min-height: 50px; }
-        .preview-large { max-height: 80px; max-width: 100%; display: block; }
+        .preview-large { max-height: 100px; max-width: 100%; display: block; border: 1px solid #ddd; }
         .hidden { display: none; }
-
-        .link-box { background: #e3f2fd; padding: 10px; border: 1px solid #90caf9; color: #1565c0; font-family: monospace; word-break: break-all; margin-top:10px; cursor: pointer; }
-        .ai-box { background: #f4f7f6; padding: 15px; border-radius: 8px; border: 1px solid #ddd; font-family: monospace; font-size: 0.85rem; white-space: pre-wrap; margin-bottom: 15px; color: #333; }
-        
-        /* Lightbox */
-        .lightbox-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; display: none; justify-content: center; align-items: center; cursor: zoom-out; }
-        .lightbox-img { max-width: 90%; max-height: 90%; border-radius: 4px; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>🎓 Učitelský Editor <span style="font-size:0.8rem; opacity:0.6; font-weight:normal;">v1.5+</span></h1>
+    <h1>🎓 Editor v3.0 <span style="font-size:0.8rem; font-weight:normal; opacity:0.7;">(ID + Obrázky + Řazení)</span></h1>
     <div class="top-btn-group">
-        <button class="btn-qr" onclick="openQrModal()" title="Vytvořit odkaz pro žáky">🔗 Generovat odkaz</button>
-        <button class="btn-ai" onclick="openAiModal()" title="Generovat otázky pomocí AI">🤖 AI Prompt</button>
-        <button class="btn-sec" onclick="document.getElementById('file-in').click()" title="Nahrát soubor z počítače">📂 Nahrát JSON</button>
-        <button class="btn-main" onclick="exportData()" title="Stáhnout soubor pro žáky">💾 Uložit JSON</button>
+        <button class="btn-sec" onclick="document.getElementById('file-in').click()">📂 Nahrát JSON</button>
+        <button class="btn-main" onclick="exportData()">💾 Uložit pro žáky</button>
     </div>
-    <input type="file" id="file-in" accept=".json" style="display:none" onchange="importData(event)" onclick="this.value=null">
+    <input type="file" id="file-in" accept=".json" style="display:none" onchange="importData(event)">
 </header>
 
 <div class="workspace">
@@ -79,7 +69,7 @@
         <div class="deck-list" id="deck-list"></div>
         <div style="padding:15px; border-top:1px solid #eee;">
             <button class="btn-main" style="width:100%" onclick="addNewDeck()">➕ Nové téma</button>
-            <button class="btn-danger" style="width:100%; margin-top:10px;" onclick="wipeAllData()">🗑️ Reset</button>
+            <button class="btn-sec" style="width:100%; margin-top:10px; color:var(--danger); border-color:var(--danger);" onclick="wipeAllData()">🗑️ Vymazat vše</button>
         </div>
     </div>
 
@@ -90,27 +80,27 @@
 
 <div class="modal-overlay" id="modal-overlay">
     <div class="modal">
-        <div class="modal-header"><span>Editace karty</span><button onclick="closeModal('modal-overlay')" style="border:none; background:none; font-size:1.2rem; cursor:pointer;">✖</button></div>
+        <div style="padding:15px; border-bottom:1px solid #eee; font-weight:bold;">Karta</div>
         <div class="modal-body">
             <input type="hidden" id="edit-id">
             
             <div class="form-group">
                 <label>Otázka</label>
-                <input type="text" id="edit-q" placeholder="Znění otázky...">
+                <input type="text" id="edit-q">
                 <div class="img-drop-zone">
-                    <label class="btn-sec" style="font-size:0.8rem; padding:5px 10px;">📷 Nahrát<input type="file" hidden accept="image/*" onchange="processFile(this.files[0], 'q')"></label>
+                    <label class="btn-sec" style="font-size:0.8rem; padding:4px 8px;">📷 Foto<input type="file" hidden accept="image/*" onchange="processFile(this.files[0], 'q')"></label>
                     <img id="prev-q" class="preview-large hidden">
-                    <button class="btn-danger hidden" id="del-q" onclick="removeImg('q')" style="padding:2px 8px; font-size:0.7rem;">X</button>
+                    <button class="btn-sec hidden" id="del-q" onclick="removeImg('q')" style="color:red;">X</button>
                 </div>
             </div>
 
             <div class="form-group">
                 <label>Odpověď (každý řádek = jedna odrážka)</label>
-                <textarea id="edit-a" placeholder="Odpověď..."></textarea>
+                <textarea id="edit-a"></textarea>
                 <div class="img-drop-zone">
-                    <label class="btn-sec" style="font-size:0.8rem; padding:5px 10px;">📷 Nahrát<input type="file" hidden accept="image/*" onchange="processFile(this.files[0], 'a')"></label>
+                    <label class="btn-sec" style="font-size:0.8rem; padding:4px 8px;">📷 Foto<input type="file" hidden accept="image/*" onchange="processFile(this.files[0], 'a')"></label>
                     <img id="prev-a" class="preview-large hidden">
-                    <button class="btn-danger hidden" id="del-a" onclick="removeImg('a')" style="padding:2px 8px; font-size:0.7rem;">X</button>
+                    <button class="btn-sec hidden" id="del-a" onclick="removeImg('a')" style="color:red;">X</button>
                 </div>
             </div>
             
@@ -122,156 +112,74 @@
             </div>
         </div>
         <div class="modal-footer">
-            <button class="btn-sec" onclick="closeModal('modal-overlay')">Zrušit</button>
-            <button class="btn-main" onclick="saveCard()">Uložit kartu</button>
+            <button class="btn-sec" onclick="closeModal()">Zrušit</button>
+            <button class="btn-main" onclick="saveCard()">Uložit</button>
         </div>
     </div>
-</div>
-
-<div class="modal-overlay" id="qr-modal">
-    <div class="modal" style="width:500px;">
-        <div class="modal-header"><span>🔗 Generátor odkazu</span><button onclick="closeModal('qr-modal')" style="border:none; background:none;">✖</button></div>
-        <div class="modal-body">
-            <p>Zadejte přesný název souboru na GitHubu (např. velka_morava.json):</p>
-            <input type="text" id="qr-filename" style="width:100%">
-            <div id="qr-result" class="hidden" style="margin-top:20px; text-align:center;">
-                <label>Odkaz pro žáky:</label>
-                <div class="link-box" id="qr-link-text" onclick="copyLink()"></div>
-                <div style="margin-top:15px;"><img id="qr-image" style="max-width:200px; border:1px solid #ccc;"></div>
-            </div>
-        </div>
-        <div class="modal-footer"><button class="btn-main" onclick="generateQr()">Generovat</button></div>
-    </div>
-</div>
-
-<div class="modal-overlay" id="ai-modal">
-    <div class="modal">
-        <div class="modal-header"><span>🤖 AI Prompt</span><button onclick="closeModal('ai-modal')" style="border:none; background:none;">✖</button></div>
-        <div class="modal-body">
-            <div class="ai-box" id="ai-prompt-text">Vytvoř mi sadu 10 otázek na téma [TÉMA].
-Výstup musí být čistý JSON v tomto formátu:
-{
-  "Název Tématu": [
-    {
-      "q": "Otázka?",
-      "a": ["Odpověď 1"],
-      "expert": false
-    }
-  ]
-}</div>
-        </div>
-        <div class="modal-footer"><button class="btn-main" onclick="copyAiPrompt()">Kopírovat</button></div>
-    </div>
-</div>
-
-<div class="lightbox-overlay" id="lightbox" onclick="this.style.display='none'">
-    <img id="lightbox-img" class="lightbox-img">
 </div>
 
 <script>
-    let decks = JSON.parse(localStorage.getItem("teacher_decks_v1")) || {};
+    let decks = JSON.parse(localStorage.getItem("teacher_decks_v3")) || {};
     let currentDeck = null;
-    let editingCardId = null;
-    let tempImgQ = "";
-    let tempImgA = "";
+    let editingCardId = null; // Zde ukládáme index v poli, ne ID karty
+    let tempImgQ = "", tempImgA = "";
 
+    // --- ZÁKLADNÍ UI ---
     function renderDeckList() {
         const list = document.getElementById('deck-list');
         list.innerHTML = "";
         Object.keys(decks).forEach(name => {
             const div = document.createElement('div');
             div.className = `deck-item ${currentDeck === name ? 'active' : ''}`;
-            div.innerHTML = `<span>${name}</span> <span style="opacity:0.7; font-size:0.8rem;">(${decks[name].length})</span>`;
+            div.innerHTML = `<span>${name}</span> <small>(${decks[name].length})</small>`;
             div.onclick = () => { currentDeck = name; renderDeckList(); renderMainArea(); };
             list.appendChild(div);
         });
     }
 
-    function addNewDeck() {
-        const name = prompt("Název nového tématu:");
-        if (name && !decks[name]) { decks[name] = []; currentDeck = name; renderDeckList(); renderMainArea(); saveState(); }
-    }
-
     function renderMainArea() {
         if (!currentDeck) return;
         const area = document.getElementById('main-area');
-        
         let html = `
             <div class="deck-header">
                 <h2 style="margin:0;">${currentDeck}</h2>
                 <div>
-                    <button class="btn-main" onclick="openModal()">➕ Přidat</button>
-                    <button class="btn-danger" onclick="deleteDeck()">🗑️ Smazat téma</button>
+                    <button class="btn-main" onclick="openModal()">➕ Přidat kartu</button>
+                    <button class="btn-sec" style="color:red;" onclick="deleteDeck()">🗑️ Smazat sadu</button>
                 </div>
             </div>
             <table><thead><tr>
-                <th class="col-img">Obr</th>
+                <th style="width:50px">Obr</th>
                 <th>Otázka</th>
                 <th>Odpověď</th>
-                <th class="col-img">Obr</th>
-                <th style="width:160px; text-align:right;">Akce</th>
+                <th style="width:50px">Obr</th>
+                <th style="width:140px; text-align:right;">Akce</th>
             </tr></thead><tbody>
         `;
         
-        decks[currentDeck].forEach((card, index) => {
-            const qThumb = card.qImg ? `<img src="${card.qImg}" class="thumb" onclick="showLightbox('${card.qImg}')">` : '-';
-            const aThumb = card.aImg ? `<img src="${card.aImg}" class="thumb" onclick="showLightbox('${card.aImg}')">` : '-';
-            const expertMark = card.expert ? '🎓 ' : '';
-
+        decks[currentDeck].forEach((c, i) => {
+            const qImg = c.qImg ? `<img src="${c.qImg}" class="thumb">` : '-';
+            const aImg = c.aImg ? `<img src="${c.aImg}" class="thumb">` : '-';
+            const expert = c.expert ? '🎓 ' : '';
+            
             html += `<tr>
-                <td class="col-img">${qThumb}</td>
-                <td>${expertMark}${card.q}</td>
-                <td>${Array.isArray(card.a) ? card.a.join(', ') : card.a}</td>
-                <td class="col-img">${aThumb}</td>
-                <td style="text-align:right;">
-                    <button class="action-btn" onclick="moveCard(${index}, -1)" title="Nahoru">⬆️</button>
-                    <button class="action-btn" onclick="moveCard(${index}, 1)" title="Dolů">⬇️</button>
-                    <button class="action-btn" onclick="duplicateCard(${index})" title="Duplikovat">📋</button>
-                    <button class="action-btn" onclick="openModal(${index})" title="Upravit">✏️</button>
-                    <button class="action-btn" style="color:red;" onclick="removeCard(${index})" title="Smazat">🗑️</button>
+                <td>${qImg}</td>
+                <td>${expert} ${c.q} <br><small style="color:#999; font-size:0.7em;">ID: ${c.id}</small></td>
+                <td>${Array.isArray(c.a) ? c.a.join(', ') : c.a}</td>
+                <td>${aImg}</td>
+                <td class="action-cell">
+                    <button class="icon-btn" onclick="moveCard(${i}, -1)" title="Nahoru">⬆️</button>
+                    <button class="icon-btn" onclick="moveCard(${i}, 1)" title="Dolů">⬇️</button>
+                    <button class="icon-btn" onclick="duplicateCard(${i})" title="Duplikovat">📋</button>
+                    <button class="icon-btn" onclick="openModal(${i})" title="Upravit">✏️</button>
+                    <button class="icon-btn" style="color:red" onclick="removeCard(${i})" title="Smazat">🗑️</button>
                 </td>
             </tr>`;
         });
-        html += `</tbody></table>`;
-        area.innerHTML = html;
+        area.innerHTML = html + "</tbody></table>";
     }
 
-    // --- MANIPULACE S KARTAMI ---
-    function deleteDeck() {
-        if(confirm(`Opravdu smazat téma "${currentDeck}"?`)) {
-            delete decks[currentDeck];
-            currentDeck = null;
-            renderDeckList();
-            document.getElementById('main-area').innerHTML = '<div style="text-align:center; color:#999; margin-top:50px;">Vyberte téma vlevo.</div>';
-            saveState();
-        }
-    }
-
-    function removeCard(index) {
-        if(confirm("Smazat kartu?")) {
-            decks[currentDeck].splice(index, 1);
-            renderMainArea(); renderDeckList(); saveState();
-        }
-    }
-
-    function moveCard(index, direction) {
-        const newIndex = index + direction;
-        if (newIndex >= 0 && newIndex < decks[currentDeck].length) {
-            const arr = decks[currentDeck];
-            [arr[index], arr[newIndex]] = [arr[newIndex], arr[index]];
-            renderMainArea(); saveState();
-        }
-    }
-
-    function duplicateCard(index) {
-        const card = decks[currentDeck][index];
-        const newCard = JSON.parse(JSON.stringify(card)); // Deep copy
-        newCard.id = Date.now(); // Nové ID
-        decks[currentDeck].splice(index + 1, 0, newCard);
-        renderMainArea(); renderDeckList(); saveState();
-    }
-
-    // --- MODAL & OBRÁZKY ---
+    // --- LOGIKA EDITACE ---
     function openModal(index = null) {
         document.getElementById('modal-overlay').style.display = 'flex';
         tempImgQ = ""; tempImgA = "";
@@ -293,7 +201,7 @@ Výstup musí být čistý JSON v tomto formátu:
         updatePreview('q'); updatePreview('a');
     }
 
-    function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+    function closeModal() { document.getElementById('modal-overlay').style.display = 'none'; }
 
     function saveCard() {
         const q = document.getElementById('edit-q').value.trim();
@@ -302,8 +210,9 @@ Výstup musí být čistý JSON v tomto formátu:
 
         if (!q || !aVal) { alert("Vyplňte otázku a odpověď."); return; }
 
+        // VYTVOŘENÍ KARTY S ID (Klíčový moment)
         const newCard = {
-            id: Date.now(), // Generujeme ID i tady
+            id: Date.now(), // Unikátní ID podle času
             q: q,
             a: aVal.split('\n'),
             qImg: tempImgQ,
@@ -314,7 +223,7 @@ Výstup musí být čistý JSON v tomto formátu:
         };
 
         if (editingCardId !== null) {
-            // Zachovat stará SRS data a ID při editaci
+            // Při úpravě zachováme staré ID a statistiky!
             const old = decks[currentDeck][editingCardId];
             newCard.id = old.id || Date.now();
             newCard.reps = old.reps || 0;
@@ -326,86 +235,80 @@ Výstup musí být čistý JSON v tomto formátu:
             decks[currentDeck].push(newCard);
         }
 
-        closeModal('modal-overlay');
-        renderMainArea(); renderDeckList(); saveState();
+        saveToStorage();
+        closeModal();
+        renderMainArea();
+        renderDeckList();
     }
 
+    // --- POSUN A DUPLIKACE ---
+    function moveCard(index, direction) {
+        const newIndex = index + direction;
+        if (newIndex >= 0 && newIndex < decks[currentDeck].length) {
+            const temp = decks[currentDeck][index];
+            decks[currentDeck][index] = decks[currentDeck][newIndex];
+            decks[currentDeck][newIndex] = temp;
+            saveToStorage(); renderMainArea();
+        }
+    }
+
+    function duplicateCard(index) {
+        const source = decks[currentDeck][index];
+        const copy = JSON.parse(JSON.stringify(source));
+        copy.id = Date.now(); // Důležité: Duplikát musí mít nové ID!
+        copy.q += " (kopie)";
+        decks[currentDeck].splice(index + 1, 0, copy);
+        saveToStorage(); renderMainArea(); renderDeckList();
+    }
+
+    function removeCard(index) {
+        if(confirm("Smazat?")) { decks[currentDeck].splice(index, 1); saveToStorage(); renderMainArea(); renderDeckList(); }
+    }
+
+    // --- OBRÁZKY ---
     function processFile(file, type) {
         if (!file) return;
         const reader = new FileReader();
         reader.onload = (e) => {
-            if (type === 'q') tempImgQ = e.target.result;
-            else tempImgA = e.target.result;
+            if (type === 'q') tempImgQ = e.target.result; else tempImgA = e.target.result;
             updatePreview(type);
         };
         reader.readAsDataURL(file);
     }
-
     function updatePreview(type) {
         const url = (type === 'q') ? tempImgQ : tempImgA;
         const img = document.getElementById(`prev-${type}`);
-        const del = document.getElementById(`del-${type}`);
-        if (url) {
-            img.src = url; img.classList.remove('hidden'); del.classList.remove('hidden');
-        } else {
-            img.classList.add('hidden'); del.classList.add('hidden');
-        }
+        const btn = document.getElementById(`del-${type}`);
+        if (url) { img.src = url; img.classList.remove('hidden'); btn.classList.remove('hidden'); }
+        else { img.classList.add('hidden'); btn.classList.add('hidden'); }
     }
+    function removeImg(type) { if (type === 'q') tempImgQ = ""; else tempImgA = ""; updatePreview(type); }
 
-    function removeImg(type) {
-        if (type === 'q') tempImgQ = ""; else tempImgA = "";
-        updatePreview(type);
-    }
+    // --- SYSTÉM ---
+    function addNewDeck() { const n = prompt("Název sady:"); if(n) { decks[n] = []; currentDeck = n; saveToStorage(); renderDeckList(); renderMainArea(); } }
+    function deleteDeck() { if(confirm("Smazat celou sadu?")) { delete decks[currentDeck]; currentDeck = null; saveToStorage(); renderDeckList(); document.getElementById('main-area').innerHTML = ""; } }
+    function saveToStorage() { localStorage.setItem("teacher_decks_v3", JSON.stringify(decks)); }
+    function wipeAllData() { if(confirm("Opravdu smazat VŠE?")) { localStorage.removeItem("teacher_decks_v3"); location.reload(); } }
 
-    // --- IMPORT / EXPORT ---
-    function saveState() { localStorage.setItem("teacher_decks_v1", JSON.stringify(decks)); }
-    
     function exportData() {
-        const dataStr = JSON.stringify(decks, null, 2);
-        const blob = new Blob([dataStr], {type: "application/json"});
+        const blob = new Blob([JSON.stringify(decks, null, 2)], {type: "application/json"});
         const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = "historie_srs.json"; a.click();
     }
-    
+
     function importData(e) {
-        const file = e.target.files[0]; if (!file) return;
+        const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
         reader.onload = (v) => {
             try {
                 let txt = v.target.result;
-                // FIX PRO EDGE (BOM)
-                if (txt.charCodeAt(0) === 0xFEFF) txt = txt.slice(1);
-                
-                const data = JSON.parse(txt);
-                // Sloučení dat
-                decks = Object.assign(decks, data);
-                saveState(); renderDeckList(); currentDeck = null; renderMainArea(); 
-                alert("Nahráno!");
-            } catch (err) { alert("Chyba souboru JSON: " + err.message); }
+                if (txt.charCodeAt(0) === 0xFEFF) txt = txt.slice(1); // Edge Fix
+                decks = Object.assign(decks, JSON.parse(txt));
+                saveToStorage(); renderDeckList(); alert("Nahráno!");
+            } catch(e) { alert("Chyba JSON"); }
         };
         reader.readAsText(file);
     }
 
-    function wipeAllData() {
-        if(confirm("Smazat vše?")) { localStorage.removeItem("teacher_decks_v1"); location.reload(); }
-    }
-
-    // --- QR & AI ---
-    function openQrModal() { document.getElementById('qr-modal').style.display = 'flex'; document.getElementById('qr-result').classList.add('hidden'); }
-    function generateQr() {
-        const f = document.getElementById('qr-filename').value;
-        if (!f) return alert("Zadejte název!");
-        const url = `https://tondam77-faith.github.io/historie/?balicek=${f}`;
-        document.getElementById('qr-link-text').innerText = url;
-        document.getElementById('qr-image').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(url)}`;
-        document.getElementById('qr-result').classList.remove('hidden');
-    }
-    function copyLink() { navigator.clipboard.writeText(document.getElementById('qr-link-text').innerText).then(()=>alert("Zkopírováno!")); }
-    
-    function openAiModal() { document.getElementById('ai-modal').style.display='flex'; }
-    function copyAiPrompt() { navigator.clipboard.writeText(document.getElementById('ai-prompt-text').innerText).then(()=>alert("Zkopírováno!")); }
-    function showLightbox(src) { document.getElementById('lightbox-img').src = src; document.getElementById('lightbox').style.display = 'flex'; }
-
-    // INIT
     renderDeckList();
 </script>
 </body>
